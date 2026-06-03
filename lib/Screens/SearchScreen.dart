@@ -13,6 +13,7 @@ import 'home_models.dart';
 import 'video_player_screen.dart';
 import 'app_shell.dart';
 import '../theme/jinntv_theme.dart';
+import 'admin_api_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  PREFS KEYS
@@ -40,7 +41,7 @@ class _SearchScreenState extends State<SearchScreen>
   static const Color _accent  = JinnTvTheme.pink;
 
   // ── API
-  static const String _api   = "https://jinntv.com/api_forApp/search.php";
+  static String get _api => apiUrl('/api_forApp/search.php');
   static const int    _limit = 20;
 
   // ── Controllers
@@ -98,7 +99,7 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     super.initState();
     _client   = http.Client();
-    _homeRepo = HomeRepository(ApiClient(baseUrl: "https://jinntv.com"));
+    _homeRepo = HomeRepository(ApiClient(baseUrl: adminBaseUrl));
 
     _fadeCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 320));

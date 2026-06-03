@@ -15,11 +15,11 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.cartzlinkv2.jinntv"
+    namespace = "com.application.JTCN"
     compileSdk = flutter.compileSdkVersion
 
     defaultConfig {
-        applicationId = "com.cartzlinkv2.jinntv"
+        applicationId = "com.application.JTCN"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

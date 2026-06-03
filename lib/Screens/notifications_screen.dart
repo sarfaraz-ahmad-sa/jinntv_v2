@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../db/db_helper.dart';
 import '../services/notification_service.dart';
+import 'admin_api_screen.dart';
 
 // ─── Time-ago cache (avoids recomputing on every build) ───────────────────────
 final _timeAgoCache = <String, String>{};
@@ -175,7 +176,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Uri _listUri(int offset) => Uri.parse(
-        'https://jinntv.com/api_forApp/getNotifications.php'
+        apiUrl('/api_forApp/getNotifications.php') +
         '?user_id=$_userId&limit=$_limit&offset=$offset',
       );
 
@@ -289,7 +290,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (uid == null || uid <= 0) return;
     try {
       await http.post(
-        Uri.parse('https://jinntv.com/api_forApp/notificationAck.php'),
+        Uri.parse(apiUrl('/api_forApp/notificationAck.php')),
         body: {
           'notification_id': item.notificationId.toString(),
           'user_id': uid.toString(),

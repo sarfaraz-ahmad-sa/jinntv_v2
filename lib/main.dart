@@ -15,6 +15,7 @@ import 'firebase_options.dart';
 
 import 'Screens/login.dart';
 import 'Screens/app_shell.dart';
+import 'Screens/admin_api_screen.dart';
 
 import 'controllers/theme_controller.dart';
 import 'db/db_helper.dart';
@@ -180,6 +181,9 @@ void main() async {
   // Keep conservative for low-end devices.
   PaintingBinding.instance.imageCache.maximumSize = 1500;
   PaintingBinding.instance.imageCache.maximumSizeBytes = 80 << 20; // 80 MB
+
+  // ✅ Load admin base URL before anything else
+  await initAdminBaseUrl();
 
   // ✅ Firebase init
   await Firebase.initializeApp(

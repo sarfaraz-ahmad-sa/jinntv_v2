@@ -16,6 +16,7 @@ import 'AboutUs.dart';
 import 'MyPlayListScreen.dart';
 import 'widgets/app_bottom_nav.dart';
 import 'widgets/More_menu.dart';
+import 'admin_api_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -91,7 +92,7 @@ class _AppShellState extends State<AppShell> {
     if (token == null || token.isEmpty) return;
 
     final res = await http.post(
-      Uri.parse("https://jinntv.com/api_forApp/saveFirebaseToken.php"),
+      Uri.parse(apiUrl('/api_forApp/saveFirebaseToken.php')),
       body: {
         "user_id": userId.toString(),
         "fcm_token": token,

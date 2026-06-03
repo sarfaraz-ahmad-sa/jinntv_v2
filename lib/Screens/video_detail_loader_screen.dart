@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'api_client.dart';
+import 'admin_api_screen.dart';
 
 enum _PlayerMode { none, youtube, mp4 }
 
@@ -27,7 +28,7 @@ class VideoPlayerScreen extends StatefulWidget {
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  final api = ApiClient(baseUrl: "https://www.jinntv.com");
+  final api = ApiClient(baseUrl: adminBaseUrl);
 
   YoutubePlayerController? _yt;
   VideoPlayerController? _vp;

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import '../theme/jinntv_theme.dart';
 import 'app_shell.dart';
+import 'admin_api_screen.dart';
 
 class SupportUsScreen extends StatefulWidget {
   const SupportUsScreen({super.key});
@@ -17,8 +18,8 @@ class SupportUsScreen extends StatefulWidget {
 
 class _SupportUsScreenState extends State<SupportUsScreen>
     with WidgetsBindingObserver {
-  static const String _apiUrl =
-      'https://jinntv.com/jinn-tv-admin/api_support_us.php';
+  static String get _apiUrl =>
+      apiUrl('/jinn-tv-admin/api_support_us.php');
 
   SupportUsData? _data;
   bool _loading = true;

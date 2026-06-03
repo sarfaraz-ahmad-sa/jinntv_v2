@@ -17,6 +17,7 @@ import 'app_shell.dart';
 import '../db/db_helper.dart';
 import '../theme/jinntv_theme.dart';
 import 'login.dart';
+import 'admin_api_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -32,8 +33,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   String fullPhoneNumber = '';
 
-  static const String signupUrl = "https://jinntv.com/php_scripts/data.php";
-  static const String loginUrl = "https://jinntv.com/login_app.php";
+  static String get signupUrl => apiUrl('/php_scripts/data.php');
+  static String get loginUrl => apiUrl('/login_app.php');
   static const String privacyPolicyUrl =
       "https://www.jinntv.com/app-privacy-policy";
   static const String termsUrl = "https://www.jinntv.com/termofuse.pdf";

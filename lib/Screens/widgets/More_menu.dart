@@ -17,6 +17,7 @@ import '../AboutUs.dart';
 import '../SearchScreen.dart';
 import '../MyPlayListScreen.dart';
 import '../sql_logs_screen.dart';
+import '../admin_api_screen.dart';
 import '../../db/db_helper.dart';
 
 class SocialLinkModel {
@@ -181,7 +182,7 @@ class _MoreScreenState extends State<MoreScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('https://jinntv.com/api_forApp/get_more_menu_social_links.php'),
+        Uri.parse(apiUrl('/api_forApp/get_more_menu_social_links.php')),
         headers: {
           'Accept': 'application/json',
         },
@@ -346,6 +347,19 @@ class _MoreScreenState extends State<MoreScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => const SqlLogsScreen(),
+                            ),
+                          ),
+                        ),
+                        _divider(),
+                        _moreTile(
+                          context,
+                          icon: Icons.api_rounded,
+                          title: 'API Settings',
+                          subtitle: 'Manage base URL & endpoints',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AdminApiScreen(),
                             ),
                           ),
                         ),

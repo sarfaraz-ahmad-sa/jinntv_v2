@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../theme/jinntv_theme.dart';
+import 'admin_api_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -21,8 +22,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _popScheduled = false;
 
   // yahan apna actual API endpoint lagao
-  static const String _forgotPasswordUrl =
-      'https://jinntv.com/api_forApp/forgot_password.php';
+  static String get _forgotPasswordUrl =>
+      apiUrl('/api_forApp/forgot_password.php');
 
   @override
   void dispose() {

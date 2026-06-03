@@ -18,6 +18,7 @@ import 'SearchScreen.dart';
 import '../db/db_helper.dart';
 import 'login.dart';
 import 'video_hero_player.dart';
+import 'admin_api_screen.dart';
 
 // ── Models ────────────────────────────────────────────────────────────────────
 
@@ -393,7 +394,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
 
     final uri = Uri.parse(
-      "https://jinntv.com/api_forApp/video_detail.php?vid=$vid&user_id=$userId",
+      "${apiUrl('/api_forApp/video_detail.php')}?vid=$vid&user_id=$userId",
     );
     final res = await http.get(uri).timeout(const Duration(seconds: 12));
     if (_disposed || gen != _loadGen) return;
@@ -610,7 +611,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
 
     if (videoId > 0) {
-      Share.share("https://www.jinntv.com/watch/$videoId");
+      Share.share("${adminBaseUrl}/watch/$videoId");
       return;
     }
 
@@ -684,7 +685,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
     try {
       final res = await http.post(
-        Uri.parse("https://jinntv.com/api_forApp/video_action.php"),
+        Uri.parse(apiUrl('/api_forApp/video_action.php')),
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/x-www-form-urlencoded",

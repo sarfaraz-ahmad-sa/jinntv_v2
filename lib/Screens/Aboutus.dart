@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../theme/jinntv_theme.dart';
+import 'admin_api_screen.dart';
 
 class AboutUsScreen extends StatefulWidget {
   const AboutUsScreen({super.key});
@@ -15,8 +16,7 @@ class AboutUsScreen extends StatefulWidget {
 
 class _AboutUsScreenState extends State<AboutUsScreen>
     with WidgetsBindingObserver {
-  static const String _apiUrl =
-      'https://jinntv.com/jinn-tv-admin/api_about_us.php';
+  static String get _apiUrl => apiUrl('/jinn-tv-admin/api_about_us.php');
 
   AboutUsData? _data;
   bool _loading = true;

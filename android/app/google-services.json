@@ -1,87 +1,26 @@
 {
   "project_info": {
-    "project_number": "58916143462",
-    "project_id": "jinntv-4386a",
-    "storage_bucket": "jinntv-4386a.firebasestorage.app"
+    "project_number": "633817805853",
+    "project_id": "nexplay-ef73c",
+    "storage_bucket": "nexplay-ef73c.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:58916143462:android:b1bc6aa54ccddd58f408a7",
+        "mobilesdk_app_id": "1:633817805853:android:72a59d80e0dae7da27c2f4",
         "android_client_info": {
-          "package_name": "com.cartzlink.jinntv"
+          "package_name": "com.application.JTCN"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "58916143462-mv5vamp9e3h2g2mdeqm83sdp7bbsh2qk.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBMO9DyzEtBHnKeQP2mBdMQMIndFvrPb5M"
+          "current_key": "AIzaSyAg28gkNKJPWE_kYOAemA6ee22ClThKYcs"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "58916143462-mv5vamp9e3h2g2mdeqm83sdp7bbsh2qk.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "58916143462-l6250vnpf0kd1jg8mf41q4matuadmt00.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.jinntv"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:58916143462:android:94e508e3cbcababbf408a7",
-        "android_client_info": {
-          "package_name": "com.cartzlinkv2.jinntv"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "58916143462-3qfksfiebqhi4qdate3p652cv7lfmqv1.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.cartzlinkv2.jinntv",
-            "certificate_hash": "3f846c263f3aca4ea1bf771cd090c398d702a78f"
-          }
-        },
-        {
-          "client_id": "58916143462-mv5vamp9e3h2g2mdeqm83sdp7bbsh2qk.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBMO9DyzEtBHnKeQP2mBdMQMIndFvrPb5M"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "58916143462-mv5vamp9e3h2g2mdeqm83sdp7bbsh2qk.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "58916143462-l6250vnpf0kd1jg8mf41q4matuadmt00.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.jinntv"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

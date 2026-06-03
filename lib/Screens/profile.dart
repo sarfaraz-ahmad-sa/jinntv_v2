@@ -9,6 +9,7 @@ import '../db/db_helper.dart';
 import 'login.dart';
 import 'notifications_screen.dart';
 import 'sql_logs_screen.dart';
+import 'admin_api_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -257,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final res = await http.post(
-        Uri.parse('https://jinntv.com/api_forApp/delete_account.php'),
+        Uri.parse(apiUrl('/api_forApp/delete_account.php')),
         body: {
           'user_id': _userId!,
           'email': email,

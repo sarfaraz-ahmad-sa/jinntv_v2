@@ -16,6 +16,7 @@ import 'signup.dart';
 import 'ForgotPassword.dart';
 import '../db/db_helper.dart';
 import '../theme/jinntv_theme.dart';
+import 'admin_api_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,8 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passCtrl = TextEditingController();
 
-  static const String loginUrl = "https://jinntv.com/login_app.php";
-  static const String signupUrl = "https://jinntv.com/php_scripts/data.php";
+  static String get loginUrl => apiUrl('/login_app.php');
+  static String get signupUrl => apiUrl('/php_scripts/data.php');
   static const String privacyPolicyUrl =
       "https://www.jinntv.com/app-privacy-policy";
   static const String termsUrl = "https://www.jinntv.com/termofuse.pdf";
@@ -67,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (token == null || token.isEmpty) return;
 
     final res = await http.post(
-      Uri.parse("https://jinntv.com/api_forApp/saveFirebaseToken.php"),
+      Uri.parse(apiUrl('/api_forApp/saveFirebaseToken.php')),
       body: {
         "user_id": userId.toString(),
         "fcm_token": token,

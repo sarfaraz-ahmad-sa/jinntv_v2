@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'admin_api_screen.dart';
 
 import 'notifications_screen.dart';
 import 'privacy_policy.dart';
@@ -62,23 +63,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const ScrollPhysics _netPhysics = ClampingScrollPhysics();
 
-  static const String _base = "https://www.jinntv.com/";
-  static const String _thumbBase =
-      "https://www.jinntv.com/jinn-tv-admin/uploads/videos/thumbs/";
+  String get _base => '$adminBaseUrl/';
+  String get _thumbBase => '$adminBaseUrl/jinn-tv-admin/uploads/videos/thumbs/';
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-
-    repo = HomeRepository(ApiClient(baseUrl: "https://www.jinntv.com"));
-    _futureHome = repo.fetchHomeCacheFirst();
-
+    _initRepo();
     _initUser();
-    _loadCatalogCategories();
 
-    // ✅ start slider timer (will be paused when opening video)
     _startSliderTimer();
+  }
+
+  void _initRepo() {
+    repo = HomeRepository(ApiClient(baseUrl: adminBaseUrl));
+    _futureHome = repo.fetchHomeCacheFirst();
+    _loadCatalogCategories();
   }
 
   @override

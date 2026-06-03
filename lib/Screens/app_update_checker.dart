@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'admin_api_screen.dart';
 
 class AppUpdateChecker {
   static Future<void> check(BuildContext context) async {
@@ -69,7 +70,7 @@ class AppUpdateChecker {
       final currentVersion = info.version;
 
       final res = await http
-          .get(Uri.parse('https://jinntv.com/api_forApp/get_app_version.php'))
+          .get(Uri.parse(apiUrl('/api_forApp/get_app_version.php')))
           .timeout(const Duration(seconds: 8));
 
       if (res.statusCode != 200) return;

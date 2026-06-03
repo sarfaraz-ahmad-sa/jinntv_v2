@@ -1,4 +1,4 @@
-package com.cartzlinkv2.jinntv
+package com.application.JTCN
 
 import io.flutter.embedding.android.FlutterActivity
 
