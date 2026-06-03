@@ -165,10 +165,10 @@ class _VideoHeroPlayerState extends State<VideoHeroPlayer>
         child: YoutubePlayer(
           controller: widget.yt!,
           showVideoProgressIndicator: true,
-          progressIndicatorColor: const Color(0xFFFF0000),
+          progressIndicatorColor: const Color(0xFF00A8E1),
           progressColors: const ProgressBarColors(
-            playedColor: Color(0xFFFF0000),
-            handleColor: Color(0xFFFF0000),
+            playedColor: Color(0xFF00A8E1),
+            handleColor: Color(0xFF00A8E1),
             bufferedColor: Colors.white30,
             backgroundColor: Colors.white12,
           ),
@@ -459,7 +459,7 @@ class _Mp4Overlay extends StatelessWidget {
                     allowScrubbing: true,
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     colors: VideoProgressColors(
-                      playedColor: const Color(0xFFFF0000),
+                      playedColor: const Color(0xFF00A8E1),
                       bufferedColor: Colors.white30,
                       backgroundColor: Colors.white.withOpacity(0.2),
                     ),
@@ -505,16 +505,32 @@ class _CtrlBtn extends StatelessWidget {
   final IconData icon;
   final double size;
   final VoidCallback onTap;
+  final bool highlight;
 
-  const _CtrlBtn({required this.icon, required this.size, required this.onTap});
+  const _CtrlBtn({
+    required this.icon,
+    required this.size,
+    required this.onTap,
+    this.highlight = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Icon(icon, color: Colors.white, size: size, shadows: [
-        Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 12),
-      ]),
+      child: Container(
+        width: size + 16,
+        height: size + 16,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: highlight
+              ? const Color(0xFF00A8E1).withOpacity(.25)
+              : Colors.black.withOpacity(.3),
+        ),
+        child: Center(
+          child: Icon(icon, color: Colors.white, size: size),
+        ),
+      ),
     );
   }
 }
@@ -538,6 +554,7 @@ class Mp4FullScreenPage extends StatefulWidget {
 
 class _Mp4FullScreenPageState extends State<Mp4FullScreenPage> {
   bool _overlay = true;
+  bool _locked  = false;  // screen lock mode
   Timer? _overlayTimer;
   Timer? _seekToastTimer;
   String _seekToastText = '';
@@ -629,7 +646,6 @@ class _Mp4FullScreenPageState extends State<Mp4FullScreenPage> {
   @override
   Widget build(BuildContext context) {
     final c = widget.controller;
-    final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -639,12 +655,26 @@ class _Mp4FullScreenPageState extends State<Mp4FullScreenPage> {
           final isPlaying = val.isPlaying;
           final pos = val.position;
           final dur = val.duration;
+          final progress = dur.inMilliseconds > 0
+              ? pos.inMilliseconds / dur.inMilliseconds
+              : 0.0;
 
           return LayoutBuilder(
             builder: (_, bc) => GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: _toggleOverlay,
-              onDoubleTapDown: (d) {
+              onTap: () {
+                if (_locked) {
+                  // Show lock icon briefly
+                  setState(() => _overlay = true);
+                  _overlayTimer?.cancel();
+                  _overlayTimer = Timer(const Duration(seconds: 2), () {
+                    if (mounted) setState(() => _overlay = false);
+                  });
+                  return;
+                }
+                _toggleOverlay();
+              },
+              onDoubleTapDown: _locked ? null : (d) {
                 if (d.localPosition.dx < bc.maxWidth / 2) {
                   _seekBy(const Duration(seconds: -10), side: -1);
                 } else {
@@ -654,181 +684,74 @@ class _Mp4FullScreenPageState extends State<Mp4FullScreenPage> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
+                  // Video
                   Positioned.fill(
-                    child: ClipRect(
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SizedBox(
-                          width: val.size.width,
-                          height: val.size.height,
-                          child: VideoPlayer(c),
-                        ),
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: SizedBox(
+                        width: val.size.width,
+                        height: val.size.height,
+                        child: VideoPlayer(c),
                       ),
                     ),
                   ),
 
+                  // Seek flash
                   if (_seekSide != 0)
                     Positioned(
                       left: _seekSide < 0 ? 0 : null,
                       right: _seekSide > 0 ? 0 : null,
-                      top: 0,
-                      bottom: 0,
+                      top: 0, bottom: 0,
                       width: bc.maxWidth * 0.3,
                       child: _SeekFlash(
-                        side: _seekSide,
-                        accent: widget.accent,
-                        seconds: 10,
-                      ),
+                          side: _seekSide, accent: const Color(0xFF00A8E1), seconds: 10),
                     ),
 
                   if (_showSeekToast)
                     Center(child: _SeekToast(text: _seekToastText)),
 
-                  AnimatedOpacity(
-                    opacity: _overlay ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: IgnorePointer(
-                      ignoring: !_overlay,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            stops: const [0.0, 0.25, 0.75, 1.0],
-                            colors: [
-                              Colors.black.withOpacity(0.55),
-                              Colors.transparent,
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.75),
-                            ],
+                  // LOCKED state — show lock icon only
+                  if (_locked)
+                    AnimatedOpacity(
+                      opacity: _overlay ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 24),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _locked = false),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(.6),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: const Icon(Icons.lock_rounded,
+                                  color: Colors.white, size: 22),
+                            ),
                           ),
-                        ),
-                        child: Stack(
-                          children: [
-                            // Top bar
-                            Positioned(
-                              top: 0, left: 0, right: 0,
-                              child: SafeArea(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4, vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.arrow_back,
-                                            color: Colors.white, size: 24),
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Center controls
-                            Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _CtrlBtn(
-                                    icon: Icons.replay_10,
-                                    size: 42,
-                                    onTap: () => _seekBy(
-                                        const Duration(seconds: -10), side: -1),
-                                  ),
-                                  const SizedBox(width: 28),
-                                  _CtrlBtn(
-                                    icon: isPlaying
-                                        ? Icons.pause_circle_filled
-                                        : Icons.play_circle_filled,
-                                    size: 72,
-                                    onTap: () async {
-                                      if (c.value.isPlaying) {
-                                        await c.pause();
-                                        if (mounted) {
-                                          setState(() => _overlay = true);
-                                          _overlayTimer?.cancel();
-                                        }
-                                      } else {
-                                        await c.play();
-                                        _scheduleHide();
-                                      }
-                                      if (mounted) setState(() {});
-                                    },
-                                  ),
-                                  const SizedBox(width: 28),
-                                  _CtrlBtn(
-                                    icon: Icons.forward_10,
-                                    size: 42,
-                                    onTap: () => _seekBy(
-                                        const Duration(seconds: 10), side: 1),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Bottom bar
-                            Positioned(
-                              left: 0, right: 0, bottom: bottomPad,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    child: VideoProgressIndicator(
-                                      c,
-                                      allowScrubbing: true,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10),
-                                      colors: VideoProgressColors(
-                                        playedColor: const Color(0xFFFF0000),
-                                        bufferedColor: Colors.white30,
-                                        backgroundColor:
-                                            Colors.white.withOpacity(0.2),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                        16, 0, 16, 12),
-                                    child: Row(
-                                      children: [
-                                        Text(_fmt(pos),
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600)),
-                                        const Text(' / ',
-                                            style: TextStyle(
-                                                color: Colors.white54,
-                                                fontSize: 13)),
-                                        Text(_fmt(dur),
-                                            style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 13)),
-                                        const Spacer(),
-                                        GestureDetector(
-                                          onTap: () =>
-                                              Navigator.of(context).pop(),
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(4),
-                                            child: Icon(Icons.fullscreen_exit,
-                                                color: Colors.white, size: 26),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ),
-                  ),
+
+                  // FULL overlay
+                  if (!_locked)
+                    AnimatedOpacity(
+                      opacity: _overlay ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 220),
+                      child: IgnorePointer(
+                        ignoring: !_overlay,
+                        child: _buildOverlay(
+                          c: c,
+                          isPlaying: isPlaying,
+                          pos: pos, dur: dur,
+                          progress: progress,
+                          width: bc.maxWidth,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -836,6 +759,183 @@ class _Mp4FullScreenPageState extends State<Mp4FullScreenPage> {
         },
       ),
     );
+  }
+
+  Widget _buildOverlay({
+    required VideoPlayerController c,
+    required bool isPlaying,
+    required Duration pos,
+    required Duration dur,
+    required double progress,
+    required double width,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: const [0.0, 0.2, 0.8, 1.0],
+          colors: [
+            Colors.black.withOpacity(0.7),
+            Colors.transparent,
+            Colors.transparent,
+            Colors.black.withOpacity(0.85),
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // ── Top bar ──────────────────────────────────────
+          Positioned(
+            top: 0, left: 0, right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  children: [
+                    // Back
+                    _iconBtn(Icons.arrow_back_ios_new_rounded,
+                        () => Navigator.of(context).pop()),
+                    const Spacer(),
+                    // Lock
+                    _iconBtn(Icons.lock_open_rounded,
+                        () => setState(() { _locked = true; _overlay = false; })),
+                    const SizedBox(width: 4),
+                    // Fullscreen exit
+                    _iconBtn(Icons.fullscreen_exit_rounded,
+                        () => Navigator.of(context).pop()),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Center controls ──────────────────────────────
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _CtrlBtn(
+                  icon: Icons.replay_10_rounded,
+                  size: 30,
+                  onTap: () => _seekBy(const Duration(seconds: -10), side: -1),
+                ),
+                const SizedBox(width: 32),
+                // Play/Pause big button
+                GestureDetector(
+                  onTap: () async {
+                    if (c.value.isPlaying) {
+                      await c.pause();
+                      if (mounted) { setState(() => _overlay = true); _overlayTimer?.cancel(); }
+                    } else {
+                      await c.play();
+                      _scheduleHide();
+                    }
+                    if (mounted) setState(() {});
+                  },
+                  child: Container(
+                    width: 72, height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF00A8E1).withOpacity(.25),
+                      border: Border.all(color: const Color(0xFF00A8E1).withOpacity(.6), width: 2),
+                    ),
+                    child: Icon(
+                      isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: Colors.white, size: 40,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 32),
+                _CtrlBtn(
+                  icon: Icons.forward_10_rounded,
+                  size: 30,
+                  onTap: () => _seekBy(const Duration(seconds: 10), side: 1),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Bottom bar ───────────────────────────────────
+          Positioned(
+            left: 0, right: 0, bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Custom progress bar
+                    SliderTheme(
+                      data: SliderThemeData(
+                        trackHeight: 3,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                        activeTrackColor: const Color(0xFF00A8E1),
+                        inactiveTrackColor: Colors.white24,
+                        thumbColor: const Color(0xFF00A8E1),
+                        overlayColor: const Color(0xFF00A8E1).withOpacity(.2),
+                      ),
+                      child: Slider(
+                        value: progress.clamp(0.0, 1.0),
+                        onChanged: (v) {
+                          final target = dur * v;
+                          c.seekTo(target);
+                          _showOverlay(autoHide: false);
+                        },
+                        onChangeEnd: (_) => _scheduleHide(),
+                      ),
+                    ),
+                    // Time row
+                    Row(
+                      children: [
+                        Text(_fmt(pos),
+                          style: const TextStyle(color: Colors.white,
+                              fontSize: 13, fontWeight: FontWeight.w700)),
+                        const Text(' / ',
+                          style: TextStyle(color: Colors.white38, fontSize: 13)),
+                        Text(_fmt(dur),
+                          style: const TextStyle(color: Colors.white54,
+                              fontSize: 13, fontWeight: FontWeight.w500)),
+                        const Spacer(),
+                        // Remaining time
+                        Text(
+                          '-${_fmt(dur - pos)}',
+                          style: const TextStyle(
+                              color: Colors.white38, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _iconBtn(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38, height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.black.withOpacity(.35),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
+  }
+
+  void _showOverlay({bool autoHide = true}) {
+    if (!mounted) return;
+    setState(() => _overlay = true);
+    if (autoHide) _scheduleHide();
+    else _overlayTimer?.cancel();
   }
 }
 
@@ -927,10 +1027,10 @@ class _YoutubeFullScreenPageState extends State<YoutubeFullScreenPage> {
               child: YoutubePlayer(
                 controller: _controller,
                 showVideoProgressIndicator: true,
-                progressIndicatorColor: const Color(0xFFFF0000),
+                progressIndicatorColor: const Color(0xFF00A8E1),
                 progressColors: const ProgressBarColors(
-                  playedColor: Color(0xFFFF0000),
-                  handleColor: Color(0xFFFF0000),
+                  playedColor: Color(0xFF00A8E1),
+                  handleColor: Color(0xFF00A8E1),
                   bufferedColor: Colors.white30,
                   backgroundColor: Colors.white12,
                 ),
@@ -955,20 +1055,18 @@ class _YoutubeFullScreenPageState extends State<YoutubeFullScreenPage> {
                   duration: const Duration(milliseconds: 200),
                   child: IgnorePointer(
                     ignoring: !_showBack,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Material(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(50),
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).pop(),
-                          borderRadius: BorderRadius.circular(50),
-                          child: const Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Icon(Icons.arrow_back,
-                                color: Colors.white, size: 24),
-                          ),
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        margin: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(.55),
+                          border: Border.all(color: Colors.white24),
                         ),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white, size: 20),
                       ),
                     ),
                   ),

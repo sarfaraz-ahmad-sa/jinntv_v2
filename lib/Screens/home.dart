@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'admin_api_screen.dart';
+import 'widgets/jinn_error_widget.dart';
 
 import 'notifications_screen.dart';
 import 'privacy_policy.dart';
@@ -56,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   int _selectedCategoryId = 0; // 0 = All
   List<HomeVideoItem> _categoryItems = []; // selected category videos
+
+  // ✅ Continue Watching
+  List<Map<String, dynamic>> _continueWatching = [];
 
   // ✅ Double-tap-back-to-exit (like YouTube / Netflix)
   DateTime? _lastBackPressed;
@@ -149,6 +153,17 @@ class _HomeScreenState extends State<HomeScreen>
     final uid = await DBHelper.getActiveUserId();
     if (!mounted) return;
     setState(() => _activeUserId = uid);
+    await _loadContinueWatching(uid);
+  }
+
+  Future<void> _loadContinueWatching([String? uid]) async {
+    final userId = uid ?? _activeUserId;
+    if (userId == null || userId.isEmpty) return;
+    try {
+      final list = await DBHelper.getContinueWatching(userId);
+      if (!mounted) return;
+      setState(() => _continueWatching = list);
+    } catch (_) {}
   }
 
   void _reloadHome() {
@@ -158,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _reloadAll() async {
     _reloadHome();
     await _loadCatalogCategories();
+    await _loadContinueWatching();
   }
 
   // ✅ One safe method to open video (pauses slider timer)
@@ -549,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen>
             return _skeletonHome();
           }
           if (snap.hasError) {
-            return _errorBlock("${snap.error}", onRetry: _reloadAll);
+            return _errorBlock(snap.error, onRetry: _reloadAll);
           }
 
           final bundle = snap.data;
@@ -716,6 +732,10 @@ class _HomeScreenState extends State<HomeScreen>
                 if (bundle.belowSliderAd != null)
                   SliverToBoxAdapter(child: _belowHeroAd(bundle.belowSliderAd)),
 
+                // ── Continue Watching ─────────────────────────────────────
+                if (_continueWatching.isNotEmpty)
+                  SliverToBoxAdapter(child: _continueWatchingRow()),
+
                 if (_catalogError != null)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -825,6 +845,220 @@ class _HomeScreenState extends State<HomeScreen>
           );
         },
       ),
+      ),
+    );
+  }
+
+  // ===================== CONTINUE WATCHING =====================
+
+  Widget _continueWatchingRow() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 18, 10, 8),
+          child: Row(
+            children: [
+              Container(
+                width: 3,
+                height: 20,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00A8E1), Color(0xFF0077A8)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Expanded(
+                child: Text(
+                  'Continue Watching',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  if (_activeUserId != null) {
+                    await DBHelper.clearWatchHistory(_activeUserId!);
+                    setState(() => _continueWatching = []);
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.07),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Cards
+        SizedBox(
+          height: 130,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: _netPhysics,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            cacheExtent: 600,
+            itemCount: _continueWatching.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) {
+              final item = _continueWatching[i];
+              final title  = item['title']?.toString() ?? '';
+              final thumb  = item['thumb_url']?.toString() ?? '';
+              final posMs  = (item['position_ms'] as int? ?? 0);
+              final durMs  = (item['duration_ms'] as int? ?? 1);
+              final pct    = durMs > 0 ? (posMs / durMs).clamp(0.0, 1.0) : 0.0;
+              final videoId = item['video_id']?.toString() ?? '';
+              final ytId   = item['youtube_id']?.toString();
+              final mp4    = item['mp4_url']?.toString();
+
+              return _continueWatchingCard(
+                title: title,
+                thumbUrl: thumb,
+                progress: pct,
+                onTap: () => _openVideoPlayer(
+                  videoId: int.tryParse(videoId),
+                  title: title,
+                  youtubeId: ytId?.isEmpty == true ? null : ytId,
+                  mp4Url: mp4?.isEmpty == true ? null : mp4,
+                ),
+                onRemove: () async {
+                  if (_activeUserId != null) {
+                    await DBHelper.removeFromWatchHistory(
+                        _activeUserId!, videoId);
+                    setState(() => _continueWatching
+                        .removeWhere((e) => e['video_id'] == videoId));
+                  }
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _continueWatchingCard({
+    required String title,
+    required String thumbUrl,
+    required double progress,
+    required VoidCallback onTap,
+    required VoidCallback onRemove,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 200,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail with progress bar
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        thumbUrl.isNotEmpty
+                            ? _netImage(thumbUrl, fit: BoxFit.cover, memW: 420)
+                            : Container(color: const Color(0xFF1A242F)),
+                        const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [Color(0xBB000000), Color(0x00000000)],
+                            ),
+                          ),
+                        ),
+                        // Play button
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00A8E1).withOpacity(0.85),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.play_arrow_rounded,
+                                color: Colors.white, size: 20),
+                          ),
+                        ),
+                        // Remove button
+                        Positioned(
+                          top: 5,
+                          right: 5,
+                          child: GestureDetector(
+                            onTap: onRemove,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.65),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close_rounded,
+                                  color: Colors.white70, size: 13),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Progress bar at bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(10)),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 3,
+                      backgroundColor: Colors.white24,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF00A8E1)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1659,42 +1893,34 @@ class _HomeScreenState extends State<HomeScreen>
 
   // ===================== STATES =====================
 
-  Widget _errorBlock(String msg, {required Future<void> Function() onRetry}) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(msg,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white)),
-            const SizedBox(height: 12),
-            ElevatedButton(onPressed: onRetry, child: const Text("Retry")),
-          ],
-        ),
-      ),
+  Widget _errorBlock(Object? error, {required Future<void> Function() onRetry}) {
+    return JinnErrorWidget(
+      error: error,
+      onRetry: onRetry,
     );
   }
 
   Widget _errorInline(String msg) {
-    return Text(
-      msg,
-      textAlign: TextAlign.center,
-      style: TextStyle(color: Colors.white.withOpacity(0.75)),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.wifi_off_rounded, color: Colors.orangeAccent, size: 14),
+          const SizedBox(width: 6),
+          Text(msg,
+              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
+        ],
+      ),
     );
   }
 
   Widget _emptyBlock(String msg, {required Future<void> Function() onReload}) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(msg, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 10),
-          ElevatedButton(onPressed: onReload, child: const Text("Reload")),
-        ],
-      ),
+    return JinnErrorWidget.empty(
+      title: 'Nothing to Show',
+      subtitle: msg,
+      onRetry: onReload,
+      retryLabel: 'Reload',
     );
   }
 

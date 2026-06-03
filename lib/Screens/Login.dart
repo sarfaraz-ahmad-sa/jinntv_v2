@@ -225,16 +225,17 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isGoogleLoading = true);
 
     try {
-      await GoogleSignIn.instance.initialize();
-
-      final googleUser = await GoogleSignIn.instance.authenticate();
+      final googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
+        // User cancelled
         return;
       }
 
-      final googleAuth = googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 

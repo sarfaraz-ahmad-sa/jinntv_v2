@@ -6,6 +6,7 @@ import 'home_models.dart';
 import 'video_player_screen.dart';
 import 'MyPlayListScreen.dart';
 import '../db/db_helper.dart';
+import 'widgets/jinn_error_widget.dart';
 
 // ─────────────────────────────────────────────
 //  SectionViewAllScreen  –  YouTube style
@@ -499,33 +500,11 @@ class _SectionViewAllScreenState extends State<SectionViewAllScreen> {
   }
 
   // ── empty state ───────────────────────────────
-  Widget _emptyState() => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: _surface, shape: BoxShape.circle),
-            child: const Icon(Icons.live_tv_rounded,
-                size: 44, color: Colors.white38),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            _q.trim().isEmpty ? 'No videos found' : 'No results for "$_q"',
-            style: const TextStyle(
-              color: Colors.white, fontSize: 16,
-              fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Text(
-            _q.trim().isEmpty
-                ? 'Try again later or check your connection'
-                : 'Try a different keyword',
-            style: const TextStyle(color: Colors.white54, fontSize: 13)),
-        ],
-      ),
-    ),
+  Widget _emptyState() => JinnErrorWidget.empty(
+    title: _q.trim().isEmpty ? 'No Videos' : 'No Results',
+    subtitle: _q.trim().isEmpty
+        ? 'There are no videos in this section yet.'
+        : 'No results for "$_q". Try a different keyword.',
   );
 
   // ── app bar ───────────────────────────────────

@@ -13,9 +13,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'firebase_options.dart';
 
-import 'Screens/login.dart';
+import 'Screens/Login.dart';
 import 'Screens/app_shell.dart';
 import 'Screens/admin_api_screen.dart';
+import 'Screens/onboarding_screen.dart';
 
 import 'controllers/theme_controller.dart';
 import 'db/db_helper.dart';
@@ -206,24 +207,27 @@ void main() async {
     databaseFactory = databaseFactoryFfi;
   }
 
-  bool loggedIn = false;
+  bool loggedIn      = false;
+  bool seenOnboarding = false;
 
-  // ✅ Session check (not for web)
+  // ✅ Session + onboarding check (not for web)
   if (!kIsWeb) {
-    loggedIn = await DBHelper.isLoggedIn();
+    loggedIn       = await DBHelper.isLoggedIn();
+    seenOnboarding = await hasSeenOnboarding();
   }
 
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeController(),
-      child: MyApp(isLoggedIn: loggedIn),
+      child: MyApp(isLoggedIn: loggedIn, seenOnboarding: seenOnboarding),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
-  const MyApp({super.key, required this.isLoggedIn});
+  final bool seenOnboarding;
+  const MyApp({super.key, required this.isLoggedIn, this.seenOnboarding = false});
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +285,11 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
-      home: const AppShell(), // TODO: restore login: isLoggedIn ? const AppShell() : const LoginScreen(),
+      home: !seenOnboarding
+          ? const OnboardingScreen()
+          : isLoggedIn
+              ? const AppShell()
+              : const LoginScreen(),
     );
   }
 }

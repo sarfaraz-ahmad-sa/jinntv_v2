@@ -19,6 +19,7 @@ import '../db/db_helper.dart';
 import 'login.dart';
 import 'video_hero_player.dart';
 import 'admin_api_screen.dart';
+import 'widgets/jinn_error_widget.dart';
 
 // ── Models ────────────────────────────────────────────────────────────────────
 
@@ -254,6 +255,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _navigatingAway = false;
 
   Timer? _debounceStats;
+  Timer? _progressTimer;   // saves progress every 15s
   int _views = 0;
   int _likes = 0;
   int _dislikes = 0;
@@ -322,9 +324,61 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _selectedAudioCode = _current.defaultLanguage;
   }
 
+  void _startProgressTimer() {
+    _progressTimer?.cancel();
+    _progressTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      _saveProgress();
+    });
+  }
+
+  void _stopProgressTimer() {
+    _progressTimer?.cancel();
+    _progressTimer = null;
+  }
+
+  Future<void> _saveProgress() async {
+    if (_disposed) return;
+    final videoId = _current.videoId?.toString();
+    if (videoId == null || videoId.isEmpty) return;
+
+    final userId = await DBHelper.getActiveUserId();
+    if (userId == null) return;
+
+    int posMs = 0;
+    int durMs = 0;
+
+    try {
+      if (_mode == PlayerMode.youtube && _yt != null) {
+        posMs = (_yt!.value.position.inMilliseconds).clamp(0, 999999999);
+        durMs = (_yt!.value.metaData.duration.inMilliseconds).clamp(1, 999999999);
+      } else if (_mode == PlayerMode.mp4 && _vp != null) {
+        posMs = (_vp!.value.position.inMilliseconds).clamp(0, 999999999);
+        durMs = (_vp!.value.duration.inMilliseconds).clamp(1, 999999999);
+      }
+    } catch (_) {}
+
+    if (posMs < 5000) return; // Don't save if less than 5 seconds watched
+
+    final isCompleted = durMs > 0 && posMs / durMs > 0.90;
+
+    await DBHelper.saveWatchProgress(
+      userId: userId,
+      videoId: videoId,
+      title: _current.title,
+      thumbUrl: _current.thumbUrl,
+      youtubeId: _current.youtubeId ?? '',
+      mp4Url: _current.mp4Url ?? '',
+      positionMs: posMs,
+      durationMs: durMs,
+      isCompleted: isCompleted,
+    );
+  }
+
   @override
   void dispose() {
     _disposed = true;
+    _saveProgress(); // Save one last time before disposing
+    _stopProgressTimer();
     WidgetsBinding.instance.removeObserver(this);
     _debounceStats?.cancel();
     _pauseAll();
@@ -516,6 +570,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       );
       _mode = PlayerMode.youtube;
       await WakelockPlus.enable();
+      _startProgressTimer();
       return;
     }
 
@@ -768,6 +823,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       await _vp?.dispose();
     } catch (_) {}
 
+    _stopProgressTimer();
     _yt = null;
     _vp = null;
     _mode = PlayerMode.none;
@@ -955,28 +1011,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
-  Widget _buildError(String e) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                e,
-                style: const TextStyle(color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: _load,
-                icon: const Icon(Icons.refresh, color: Colors.white),
-                label: const Text("Retry", style: TextStyle(color: Colors.white)),
-              ),
-            ],
-          ),
-        ),
+  Widget _buildError(String e) => JinnErrorWidget(
+        error: e,
+        onRetry: _load,
       );
 
   // ── FIX: Player is now PINNED at the top. Only the content below scrolls.

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../db/db_helper.dart';
 import 'video_player_screen.dart';
+import 'widgets/jinn_error_widget.dart';
 
 // ─────────────────────────────────────────────
 //  MyPlayListScreen  –  YouTube Downloads style
@@ -24,11 +25,12 @@ class MyPlayListScreen extends StatefulWidget {
 
 class _MyPlayListScreenState extends State<MyPlayListScreen>
     with SingleTickerProviderStateMixin {
-  static const _bg = Color(0xFF0F171E);
-  static const _surface = Color(0xFF1A1A1A);
-  static const _card = Color(0xFF212121);
-  static const _accent = Color(0xFFFF0000);
-  static const _divider = Color(0xFF2A2A2A);
+  static const _bg      = Color(0xFF0F171E);
+  static const _surface = Color(0xFF162030);
+  static const _card    = Color(0xFF1A2A3A);
+  static const _accent  = Color(0xFF00A8E1);
+  static const _tealDark = Color(0xFF0077A8);
+  static const _divider = Color(0xFF1E2E3E);
 
   bool _loading = true;
   bool _busy = false;
@@ -609,41 +611,45 @@ class _MyPlayListScreenState extends State<MyPlayListScreen>
         child: InkWell(
           onTap: () => _open(r),
           onLongPress: () => _toggleSelect(r),
-          child: Container(
-            color:
-                selected ? Colors.white.withOpacity(0.05) : Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            color: selected
+                ? _accent.withOpacity(0.08)
+                : Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (_selectMode) ...[
                   Padding(
-                    padding: const EdgeInsets.only(top: 14, right: 6),
+                    padding: const EdgeInsets.only(right: 8),
                     child: _selectCircle(selected),
                   ),
                 ],
                 Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(10),
                       child: SizedBox(
-                        width: 160,
-                        height: 92,
+                        width: 155,
+                        height: 88,
                         child: _thumbWidget(thumb),
                       ),
                     ),
                     Positioned.fill(
                       child: Center(
                         child: Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.55),
+                            color: Colors.black.withOpacity(0.5),
                             shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white.withOpacity(.3)),
                           ),
                           child: const Icon(
                             Icons.play_arrow_rounded,
                             color: Colors.white,
-                            size: 22,
+                            size: 20,
                           ),
                         ),
                       ),
@@ -661,32 +667,36 @@ class _MyPlayListScreenState extends State<MyPlayListScreen>
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
                           height: 1.35,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'JinnTV',
-                        style: TextStyle(color: Colors.white54, fontSize: 12),
-                      ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 6),
                       Row(
-                        children: const [
-                          Icon(
-                            Icons.check_circle_outline_rounded,
-                            size: 12,
-                            color: Colors.white38,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Saved',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 12,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _accent.withOpacity(.12),
+                              borderRadius: BorderRadius.circular(4),
                             ),
+                            child: const Text('JinnTV',
+                              style: TextStyle(
+                                  color: Color(0xFF5BC8F5),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700)),
                           ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.bookmark_rounded,
+                              size: 11, color: Color(0xFF00A8E1)),
+                          const SizedBox(width: 3),
+                          const Text('Saved',
+                            style: TextStyle(
+                                color: Color(0xFF5BC8F5),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ],
@@ -812,14 +822,18 @@ class _MyPlayListScreenState extends State<MyPlayListScreen>
         height: 22,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: selected ? Colors.white : Colors.transparent,
+          gradient: selected
+              ? const LinearGradient(
+                  colors: [_tealDark, _accent])
+              : null,
+          color: selected ? null : Colors.transparent,
           border: Border.all(
-            color: selected ? Colors.white : Colors.white54,
+            color: selected ? Colors.transparent : Colors.white38,
             width: 1.8,
           ),
         ),
         child: selected
-            ? const Icon(Icons.check_rounded, color: Colors.black, size: 14)
+            ? const Icon(Icons.check_rounded, color: Colors.white, size: 13)
             : null,
       );
 
@@ -872,91 +886,66 @@ class _MyPlayListScreenState extends State<MyPlayListScreen>
     return GestureDetector(
       onTap: _busy ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white12),
+          color: const Color(0xFF1C2A38),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white70, size: 14),
+            Icon(icon, color: const Color(0xFF5BC8F5), size: 14),
             const SizedBox(width: 5),
-            Text(
-              label,
+            Text(label,
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-              ),
-            ),
+              )),
           ],
         ),
       ),
     );
   }
 
-  Widget _emptyState() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: _surface,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.download_for_offline_outlined,
-                  size: 48,
-                  color: Colors.white38,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _q.trim().isEmpty
-                    ? 'Your playlist is empty'
-                    : 'No results for "$_q"',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _q.trim().isEmpty
-                    ? 'Save videos to watch them later'
-                    : 'Try a different keyword',
-                style: const TextStyle(color: Colors.white54, fontSize: 13),
-              ),
-            ],
-          ),
-        ),
+  Widget _emptyState() => JinnErrorWidget.empty(
+        title: _q.trim().isEmpty ? 'Playlist is Empty' : 'No Results',
+        subtitle: _q.trim().isEmpty
+            ? 'Save videos from the home screen and they will appear here.'
+            : 'No videos match "$_q". Try a different keyword.',
       );
 
   PreferredSizeWidget _appBar() => AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color(0xFF0A1018),
         elevation: 0,
         scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
           onPressed: _busy ? null : _handleBack,
         ),
         titleSpacing: 0,
         title: _searching
             ? _searchField()
-            : const Text(
-                'My Playlist',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
+            : Row(children: [
+                Container(
+                  width: 3, height: 20,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [_accent, _tealDark],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
+                const Text('My Playlist',
+                  style: TextStyle(color: Colors.white,
+                      fontSize: 19, fontWeight: FontWeight.w900)),
+              ]),
         actions: [
           if (!_searching && !_selectMode) ...[
             IconButton(
@@ -964,28 +953,21 @@ class _MyPlayListScreenState extends State<MyPlayListScreen>
               onPressed: _busy ? null : () => _toggleSearch(true),
             ),
             IconButton(
-              icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+              icon: const Icon(Icons.tune_rounded, color: Colors.white),
               onPressed: _busy ? null : _openSortSheet,
             ),
           ],
           if (_searching)
             IconButton(
               icon: const Icon(Icons.close_rounded, color: Colors.white),
-              onPressed: () {
-                _toggleSearch(false);
-                _applySearch('');
-              },
+              onPressed: () { _toggleSearch(false); _applySearch(''); },
             ),
           if (_selectMode)
             TextButton(
               onPressed: () => _toggleSelectMode(false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF00A8E1),
+                    fontWeight: FontWeight.w700)),
             ),
         ],
       );

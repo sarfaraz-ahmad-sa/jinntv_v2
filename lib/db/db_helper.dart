@@ -28,7 +28,7 @@ class DBHelper {
 
     return openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE session(
@@ -41,6 +41,7 @@ class DBHelper {
 
         await _createKvCache(db);
         await _createPlaylist(db);
+        await _createWatchHistory(db);
 
         await db.execute('''
           CREATE TABLE logs(
@@ -96,6 +97,9 @@ class DBHelper {
         if (oldVersion < 4) {
           await _createPlaylist(db);
         }
+        if (oldVersion < 5) {
+          await _createWatchHistory(db);
+        }
       },
     );
   }
@@ -126,6 +130,110 @@ class DBHelper {
       )
     ''');
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // WATCH HISTORY
+  // ─────────────────────────────────────────────────────────────────────────
+
+  static Future<void> _createWatchHistory(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS watch_history(
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id       TEXT NOT NULL,
+        video_id      TEXT NOT NULL,
+        title         TEXT,
+        thumb_url     TEXT,
+        youtube_id    TEXT,
+        mp4_url       TEXT,
+        position_ms   INTEGER DEFAULT 0,
+        duration_ms   INTEGER DEFAULT 0,
+        watched_at    INTEGER,
+        is_completed  INTEGER DEFAULT 0,
+        UNIQUE(user_id, video_id)
+      )
+    ''');
+  }
+
+  /// Save or update watch progress for a video.
+  static Future<void> saveWatchProgress({
+    required String userId,
+    required String videoId,
+    required String title,
+    required String thumbUrl,
+    String? youtubeId,
+    String? mp4Url,
+    required int positionMs,
+    required int durationMs,
+    bool isCompleted = false,
+  }) async {
+    final d = await db;
+    await d.insert(
+      'watch_history',
+      {
+        'user_id':      userId,
+        'video_id':     videoId,
+        'title':        title,
+        'thumb_url':    thumbUrl,
+        'youtube_id':   youtubeId ?? '',
+        'mp4_url':      mp4Url ?? '',
+        'position_ms':  positionMs,
+        'duration_ms':  durationMs,
+        'watched_at':   DateTime.now().millisecondsSinceEpoch,
+        'is_completed': isCompleted ? 1 : 0,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Get recent incomplete watches (not completed, watched in last 30 days).
+  static Future<List<Map<String, dynamic>>> getContinueWatching(
+      String userId) async {
+    final d = await db;
+    final cutoff = DateTime.now()
+        .subtract(const Duration(days: 30))
+        .millisecondsSinceEpoch;
+    return d.query(
+      'watch_history',
+      where: 'user_id = ? AND is_completed = 0 AND watched_at > ? AND position_ms > 5000',
+      whereArgs: [userId, cutoff],
+      orderBy: 'watched_at DESC',
+      limit: 20,
+    );
+  }
+
+  /// Get saved position for a specific video (returns 0 if not found).
+  static Future<int> getSavedPosition(String userId, String videoId) async {
+    final d = await db;
+    final rows = await d.query(
+      'watch_history',
+      columns: ['position_ms', 'is_completed'],
+      where: 'user_id = ? AND video_id = ?',
+      whereArgs: [userId, videoId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return 0;
+    if ((rows.first['is_completed'] as int? ?? 0) == 1) return 0;
+    return rows.first['position_ms'] as int? ?? 0;
+  }
+
+  /// Remove a video from continue watching.
+  static Future<void> removeFromWatchHistory(
+      String userId, String videoId) async {
+    final d = await db;
+    await d.delete(
+      'watch_history',
+      where: 'user_id = ? AND video_id = ?',
+      whereArgs: [userId, videoId],
+    );
+  }
+
+  /// Clear all watch history for a user.
+  static Future<void> clearWatchHistory(String userId) async {
+    final d = await db;
+    await d.delete('watch_history', where: 'user_id = ?', whereArgs: [userId]);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   /// current user id (userid preferred; fallback email; else 'guest')
   static Future<String> currentUserId() async {
