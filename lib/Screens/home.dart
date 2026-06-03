@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -207,12 +208,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return availableW * (h / w);
   }
 
-  Widget _netImage(String url, {BoxFit fit = BoxFit.cover}) {
+  Widget _netImage(String url, {BoxFit fit = BoxFit.cover, int memW = 900}) {
     return CachedNetworkImage(
       imageUrl: url,
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 120),
-      memCacheWidth: 900,
+      memCacheWidth: memW,
       placeholder: (_, __) => Container(
         color: Colors.white10,
         alignment: Alignment.center,
@@ -540,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _futureHome,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return _skeletonHome();
           }
           if (snap.hasError) {
             return _errorBlock("${snap.error}", onRetry: _reloadAll);
@@ -683,26 +684,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 2),
                   ],
-                  flexibleSpace: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.96),
-                          _bg.withOpacity(0.75),
-                          Colors.transparent,
-                        ],
+                  flexibleSpace: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.88),
+                              Colors.black.withOpacity(0.50),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
 
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9),
-                    child: _heroCard(slider),
-                  ),
+                  child: _heroCard(slider),
                 ),
 
                 if (bundle.belowSliderAd != null)
@@ -1087,11 +1090,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _heroCard(List<HomeSliderItem> slider) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final heroH = screenHeight * 0.50;
+    final heroH = screenHeight * 0.56;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: SizedBox(
+    return SizedBox(
         height: heroH,
         child: Stack(
           children: [
@@ -1264,9 +1265,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (slider.length > 1)
               Positioned(
-                right: 16,
-                bottom: 18 + 52,
-                child: Row(
+                left: 0,
+                right: 0,
+                bottom: 18 + 56,
+                child: Center(
+                  child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: List.generate(
                     slider.length.clamp(0, 8),
                     (i) {
@@ -1286,11 +1290,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
+                ),
               ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   // ===================== ROWS =====================
@@ -1386,6 +1390,7 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         physics: _netPhysics,
         padding: const EdgeInsets.symmetric(horizontal: 9),
+        cacheExtent: 600,
         itemCount: items.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (_, index) {
@@ -1427,7 +1432,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      _netImage(backgroundUrl, fit: BoxFit.cover),
+                      _netImage(backgroundUrl, fit: BoxFit.cover, memW: 400),
                       Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
@@ -1487,6 +1492,7 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         physics: _netPhysics,
         padding: const EdgeInsets.symmetric(horizontal: 10),
+        cacheExtent: 600,
         itemCount: list.length,
         separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, index) {
@@ -1552,7 +1558,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      _netImage(backgroundUrl, fit: BoxFit.cover),
+                      _netImage(backgroundUrl, fit: BoxFit.cover, memW: 500),
                     ],
                   ),
                 ),
@@ -1611,6 +1617,125 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Center(
         child: Text(msg, style: const TextStyle(color: Colors.white70)),
       ),
+    );
+  }
+
+  // ===================== SKELETON =====================
+
+  Widget _skeletonHome() {
+    final screenH = MediaQuery.of(context).size.height;
+    return CustomScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      slivers: [
+        const SliverToBoxAdapter(child: SizedBox(height: 108)),
+        // Hero skeleton
+        SliverToBoxAdapter(
+          child: _ShimmerBox(
+            height: screenH * 0.56,
+            radius: 0,
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 14)),
+        // 3 row skeletons
+        ...List.generate(3, (_) => SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(15, 14, 8, 10),
+                child: _ShimmerBox(width: 130, height: 16, radius: 6),
+              ),
+              SizedBox(
+                height: 150,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 9),
+                  itemCount: 5,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, __) => const _ShimmerBox(
+                    width: 195,
+                    height: 120,
+                    radius: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )),
+        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+      ],
+    );
+  }
+}
+
+// ===================== SHIMMER BOX =====================
+
+class _ShimmerBox extends StatefulWidget {
+  const _ShimmerBox({
+    this.width = double.infinity,
+    required this.height,
+    this.radius = 8,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  State<_ShimmerBox> createState() => _ShimmerBoxState();
+}
+
+class _ShimmerBoxState extends State<_ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    )..repeat();
+    _anim = Tween<double>(begin: -1.5, end: 2.5).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) {
+        final v = _anim.value;
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.radius),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              stops: [
+                (v - 0.4).clamp(0.0, 1.0),
+                v.clamp(0.0, 1.0),
+                (v + 0.4).clamp(0.0, 1.0),
+              ],
+              colors: const [
+                Color(0xFF141424),
+                Color(0xFF252540),
+                Color(0xFF141424),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
