@@ -185,10 +185,14 @@ void main() async {
   // ✅ Load admin base URL before anything else
   await initAdminBaseUrl();
 
-  // ✅ Firebase init
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // ✅ Firebase init (try-catch guards against duplicate-app on hot restart)
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (_) {
+    // Already initialized — safe to ignore
+  }
 
   // ✅ local notifications + FCM init (mobile only)
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
