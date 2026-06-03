@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="slider_play_button" width="132.952" height="132.952" data-name="slider play button" viewBox="0 0 132.952 132.952">
+    <defs>
+        <style>
+            .cls-1,.cls-2,.cls-3{fill:#fff}.cls-1{opacity:.25}.cls-2{opacity:.4}.cls-4{fill:none}.cls-5{fill:#da426f}
+        </style>
+    </defs>
+    <g id="Group_615" data-name="Group 615">
+        <path id="Path_400" d="M66.476 0A66.476 66.476 0 1 1 0 66.476 66.476 66.476 0 0 1 66.476 0z" class="cls-1" data-name="Path 400"/>
+        <circle id="Ellipse_54" cx="59.716" cy="59.716" r="59.716" class="cls-2" data-name="Ellipse 54" transform="translate(6.951 6.951)"/>
+        <circle id="Ellipse_55" cx="50.702" cy="50.702" r="50.702" class="cls-3" data-name="Ellipse 55" transform="translate(15.773 15.773)"/>
+        <g id="Polygon_13" data-name="Polygon 13">
+            <path id="Path_640" d="M79.393 66.7L57.952 79.442V53.951z" class="cls-4" data-name="Path 640"/>
+            <path id="Path_641" d="M79.393 66.7L57.952 53.951v25.491L79.393 66.7m5 0a5 5 0 0 1-2.445 4.3L60.507 83.74a5 5 0 0 1-7.555-4.3V53.951a5 5 0 0 1 7.555-4.3L81.948 62.4a5 5 0 0 1 2.445 4.3z" class="cls-5" data-name="Path 641"/>
+        </g>
+    </g>
+</svg>

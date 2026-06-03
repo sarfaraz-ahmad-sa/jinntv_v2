@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="34.33" height="34.33" viewBox="0 0 34.33 34.33">
+    <defs>
+        <style>
+            .cls-1{fill:#fff}
+        </style>
+    </defs>
+    <g id="add-icon">
+        <path id="add-icon-2" d="M-27 4.167h-14.167V-10a1.5 1.5 0 0 0-1.5-1.5 1.5 1.5 0 0 0-1.5 1.5V4.167h-14.164a1.5 1.5 0 0 0-1.5 1.5 1.5 1.5 0 0 0 1.5 1.5h14.164v14.165a1.5 1.5 0 0 0 1.5 1.5 1.5 1.5 0 0 0 1.5-1.5V7.167H-27a1.5 1.5 0 0 0 1.5-1.5 1.5 1.5 0 0 0-1.5-1.5z" class="cls-1" data-name="add-icon" transform="translate(59.831 11.498)"/>
+    </g>
+</svg>
