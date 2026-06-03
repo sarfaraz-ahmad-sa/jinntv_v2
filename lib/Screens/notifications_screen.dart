@@ -104,8 +104,8 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  static const _pink = Color(0xffEC4899);
-  static const _card = Color(0xFF111827);
+  static const _pink = Color(0xFF00A8E1);
+  static const _card = Color(0xFF1A2533);
 
   // Separate ValueNotifier so badge rebuilds don't rebuild the whole tree.
   final _unreadNotifier = ValueNotifier<int>(0);
@@ -308,7 +308,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         : _items;
 
     return Scaffold(
-      backgroundColor: const Color(0xff070B1A),
+      backgroundColor: const Color(0xFF0F171E),
       body: Stack(
         children: [
           // Background gradient — const so it never rebuilds
@@ -475,7 +475,7 @@ class _Background extends StatelessWidget {
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xff070B1A), Color(0xff120E2A), Color(0xff1D1033)],
+              colors: [Color(0xFF0F171E), Color(0xFF1A242F), Color(0xFF1F2D3A)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -484,12 +484,12 @@ class _Background extends StatelessWidget {
         Positioned(
           top: -80,
           left: -50,
-          child: _GlowCircle(size: 220, color: Color(0xff7C3AED), opacity: .22),
+          child: _GlowCircle(size: 220, color: Color(0xFF0077A8), opacity: .22),
         ),
         Positioned(
           top: 120,
           right: -60,
-          child: _GlowCircle(size: 180, color: Color(0xffEC4899), opacity: .16),
+          child: _GlowCircle(size: 180, color: Color(0xFF00A8E1), opacity: .16),
         ),
       ],
     );
@@ -574,7 +574,7 @@ class _ShimmerListState extends State<_ShimmerList>
       animation: _anim,
       builder: (_, __) {
         final shimmerColor =
-            Color.lerp(const Color(0xFF1E293B), const Color(0xFF374151), _anim.value)!;
+            Color.lerp(const Color(0xFF1A2533), const Color(0xFF374151), _anim.value)!;
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
           itemCount: 7,
@@ -663,10 +663,10 @@ class _NotifTile extends StatelessWidget {
             ? const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                colors: [Color(0xFF1A2533), Color(0xFF0F172A)],
               )
             : null,
-        color: isUnread ? null : const Color(0xFF111827),
+        color: isUnread ? null : const Color(0xFF1A2533),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isUnread
@@ -802,7 +802,7 @@ class _AvatarDot extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.redAccent,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF0B0F14), width: 2),
+                border: Border.all(color: const Color(0xFF0F171E), width: 2),
               ),
             ),
           ),
@@ -916,7 +916,7 @@ class _FilterChipButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    final bg = isSelected ? Colors.white : const Color(0xFF111827);
+    final bg = isSelected ? Colors.white : const Color(0xFF1A2533);
     final txt = isSelected ? Colors.black : Colors.white;
 
     return InkWell(

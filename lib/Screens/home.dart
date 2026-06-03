@@ -32,7 +32,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   int _currentSlide = 0;
 
   late final PageController _pageController;
@@ -57,9 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // ✅ Double-tap-back-to-exit (like YouTube / Netflix)
   DateTime? _lastBackPressed;
 
-  static const Color _bg = Color(0xFF0B0F14);
-  static const Color _appBar = Color(0xFF0F1723);
-  static const Color _accent = Color(0xFFB58BFF);
+  static const Color _bg = Color(0xFF0F171E);
+  static const Color _appBar = Color(0xFF142030);
+  static const Color _accent = Color(0xFF5BC8F5);
 
   static const ScrollPhysics _netPhysics = ClampingScrollPhysics();
 
@@ -499,6 +502,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // required by AutomaticKeepAliveClientMixin
     return PopScope(
       // canPop: false → Flutter back button automatically handle nahi karega.
       // Hum manually onPopInvoked me decide karenge: snackbar dikhayein
@@ -832,14 +836,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final top = _catalogCats.take(topCount).toList();
 
     return SizedBox(
-      height: 32,
+      height: 36,
       child: Row(
         children: [
           Expanded(
             child: ListView(
               scrollDirection: Axis.horizontal,
               physics: _netPhysics,
-              padding: const EdgeInsets.only(left: 10, right: 8),
+              padding: const EdgeInsets.only(left: 14, right: 8),
               children: [
                 _chipBtnDyn(
                   "All",
@@ -860,7 +864,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: 12),
             child: (_catalogCats.length > topCount)
                 ? _moreButtonFixed()
                 : const SizedBox.shrink(),
@@ -876,36 +880,30 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
     bool isPrimary = false,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xff723579), Color(0xffDA4775)],
+                  colors: [Color(0xFF0077A8), Color(0xFF00A8E1)],
                 )
               : null,
-          color: isSelected
-              ? null
-              : (isPrimary
-                  ? const Color(0xFF1E293B)
-                  : const Color(0xFF111827)),
-          borderRadius: BorderRadius.circular(22),
+          color: isSelected ? null : const Color(0xFF1C2A38),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.white12,
-            width: 1,
+            color: isSelected
+                ? Colors.transparent
+                : Colors.white.withOpacity(0.1),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xffDA4775).withOpacity(0.40),
-                    blurRadius: 12,
+                    color: const Color(0xFF00A8E1).withOpacity(0.35),
+                    blurRadius: 14,
                     offset: const Offset(0, 4),
                   )
                 ]
@@ -913,11 +911,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Text(
           text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
             fontSize: 13,
-            height: 1,
           ),
         ),
       ),
@@ -925,17 +922,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _moreButtonFixed() {
-    return InkWell(
+    return GestureDetector(
       onTap: _openAllCategoriesSheet,
-      borderRadius: BorderRadius.circular(22),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: const Color(0xFF111827),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.white12),
+          color: const Color(0xFF1C2A38),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
-        child: const Icon(Icons.apps, size: 16, color: Colors.white),
+        child: const Icon(Icons.grid_view_rounded, size: 16, color: Colors.white70),
       ),
     );
   }
@@ -944,7 +940,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0B0F14),
+      backgroundColor: const Color(0xFF0F171E),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -1004,7 +1000,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         hintStyle: TextStyle(color: Colors.white.withOpacity(0.45)),
                         prefixIcon: const Icon(Icons.search, color: Colors.white54),
                         filled: true,
-                        fillColor: const Color(0xFF111827),
+                        fillColor: const Color(0xFF1A2533),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
@@ -1091,7 +1087,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _heroCard(List<HomeSliderItem> slider) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final heroH = screenHeight * 0.56;
+    final heroH = screenHeight * 0.62;
 
     return SizedBox(
         height: heroH,
@@ -1106,29 +1102,68 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Stack(
                   fit: StackFit.expand,
                   children: [
+                    // Background image
                     RepaintBoundary(
                       child: _netImage(_absUrl(s.backgroundImage),
                           fit: BoxFit.cover),
                     ),
+                    // Side vignette (left)
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [Color(0xCC000000), Color(0x00000000)],
+                          stops: [0.0, 0.5],
+                        ),
+                      ),
+                    ),
+                    // Bottom gradient — multi-stop for premium depth
                     Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Color(0xE6000000),
+                            Color(0xFF0F171E),
+                            Color(0xCC000000),
+                            Color(0x55000000),
                             Color(0x00000000),
                           ],
+                          stops: [0.0, 0.3, 0.6, 1.0],
                         ),
                       ),
                     ),
+                    // Content overlay
                     Positioned(
                       left: 16,
                       right: 16,
-                      bottom: 18,
+                      bottom: 20,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // NEW badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 3),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF0077A8), Color(0xFF00A8E1)],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'NEW',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 10,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ),
+                          // Title
                           Text(
                             s.sliderTitle,
                             maxLines: 2,
@@ -1136,25 +1171,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
-                              fontSize: 23,
+                              fontSize: 26,
                               height: 1.1,
+                              letterSpacing: -0.5,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black54,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            s.page_title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 14,
-                              height: 1.2,
+                          // Subtitle / genre
+                          if (s.page_title.trim().isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              s.page_title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.65),
+                                fontSize: 13,
+                                letterSpacing: 0.2,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 14),
+                          ],
+                          const SizedBox(height: 16),
+                          // Action buttons
                           Row(
                             children: [
+                              // Play — full gradient
                               Expanded(
+                                flex: 3,
                                 child: GestureDetector(
                                   onTap: () => _openVideoPlayer(
                                     videoId: s.videoId,
@@ -1162,23 +1211,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
+                                        vertical: 13),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
                                         colors: [
-                                          Color(0xff723579),
-                                          Color(0xffDA4775),
+                                          Color(0xFF0077A8),
+                                          Color(0xFF00A8E1),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xffDA4775)
-                                              .withOpacity(0.35),
-                                          blurRadius: 14,
-                                          offset: const Offset(0, 4),
+                                          color: const Color(0xFF00A8E1)
+                                              .withOpacity(0.4),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 5),
                                         ),
                                       ],
                                     ),
@@ -1187,71 +1234,63 @@ class _HomeScreenState extends State<HomeScreen> {
                                           MainAxisAlignment.center,
                                       children: [
                                         Icon(Icons.play_arrow_rounded,
-                                            size: 24, color: Colors.white),
-                                        SizedBox(width: 6),
-                                        Text(
-                                          "Play",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 15,
-                                          ),
-                                        ),
+                                            size: 22, color: Colors.white),
+                                        SizedBox(width: 5),
+                                        Text('Play',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 15,
+                                            )),
                                       ],
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    side: const BorderSide(
-                                      color: Color(0xffB58BFF),
-                                      width: 1.5,
+                              const SizedBox(width: 10),
+                              // My List — icon button
+                              GestureDetector(
+                                onTap: () async {
+                                  final userId = await DBHelper.currentUserId();
+                                  final ok = await DBHelper.addToPlaylist(
+                                    userId: userId,
+                                    videoId: s.videoId.toString(),
+                                    title: s.sliderTitle,
+                                    thumb: _absUrl(s.backgroundImage),
+                                    youtubeId: null,
+                                    mp4Url: null,
+                                  );
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(ok
+                                          ? 'Added to My List'
+                                          : 'Already in My List'),
+                                      duration: const Duration(seconds: 2),
                                     ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 11,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 13),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: Colors.white.withOpacity(0.25)),
                                   ),
-                                  onPressed: () async {
-                                    final userId =
-                                        await DBHelper.currentUserId();
-                                    final ok = await DBHelper.addToPlaylist(
-                                      userId: userId,
-                                      videoId: s.videoId.toString(),
-                                      title: s.sliderTitle,
-                                      thumb: _absUrl(
-                                          s.backgroundImage), // slider image as thumb
-                                      youtubeId:
-                                          null, // agar slider me youtubeId field ho to yahan pass kar do
-                                      mp4Url:
-                                          null, // agar slider me mp4Url field ho to yahan pass kar do
-                                    );
-
-                                    if (!context.mounted) return;
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(ok
-                                            ? "Added to Mylist"
-                                            : "Already in Mylist"),
-                                        duration:
-                                            const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.add_rounded, size: 24),
-                                  label: const Text(
-                                    "My List",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 15,
-                                    ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.add_rounded,
+                                          size: 20, color: Colors.white),
+                                      SizedBox(width: 4),
+                                      Text('My List',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13,
+                                          )),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -1277,14 +1316,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     (i) {
                       final selected = i == _currentSlide;
                       return AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.only(left: 4),
-                        width: selected ? 18 : 8,
-                        height: 8,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                        margin: const EdgeInsets.only(left: 5),
+                        width: selected ? 22 : 6,
+                        height: 6,
                         decoration: BoxDecoration(
-                          color: selected
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.35),
+                          gradient: selected
+                              ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFF0077A8),
+                                    Color(0xFF00A8E1)
+                                  ],
+                                )
+                              : null,
+                          color:
+                              selected ? null : Colors.white.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       );
@@ -1302,9 +1349,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _rowHeader(HomeSection sec, {required VoidCallback onSeeAll}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(15, 10, 8, 3),
+      padding: const EdgeInsets.fromLTRB(14, 18, 10, 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Teal left accent bar
+          Container(
+            width: 3,
+            height: 20,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF00A8E1), Color(0xFF0077A8)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           Expanded(
             child: Text(
               sec.title,
@@ -1312,26 +1374,31 @@ class _HomeScreenState extends State<HomeScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
+                letterSpacing: 0.1,
               ),
             ),
           ),
-          InkWell(
+          GestureDetector(
             onTap: onSeeAll,
-            borderRadius: BorderRadius.circular(10),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-              child: Row(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00A8E1).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
                 children: [
-                  Text(
-                    "More",
-                    style: TextStyle(
-                      color: Color(0xffB58BFF),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: Color(0xffB58BFF), size: 18),
+                  Text('See All',
+                      style: TextStyle(
+                        color: Color(0xFF00A8E1),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      )),
+                  SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      color: Color(0xFF00A8E1), size: 11),
                 ],
               ),
             ),
@@ -1343,9 +1410,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _rowHeaderText(String title, {required VoidCallback onSeeAll}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 18, 12, 10),
+      padding: const EdgeInsets.fromLTRB(14, 18, 10, 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Container(
+            width: 3,
+            height: 20,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF00A8E1), Color(0xFF0077A8)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           Expanded(
             child: Text(
               title,
@@ -1354,26 +1435,30 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
-                fontSize: 19,
+                fontSize: 17,
+                letterSpacing: 0.1,
               ),
             ),
           ),
-          InkWell(
+          GestureDetector(
             onTap: onSeeAll,
-            borderRadius: BorderRadius.circular(10),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-              child: Row(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00A8E1).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
                 children: [
-                  Text(
-                    "More",
-                    style: TextStyle(
-                      color: Color(0xffB58BFF),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Text('See All',
+                      style: TextStyle(
+                        color: Color(0xFF00A8E1),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      )),
                   SizedBox(width: 2),
-                  Icon(Icons.chevron_right, color: Color(0xffB58BFF), size: 18),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      color: Color(0xFF00A8E1), size: 11),
                 ],
               ),
             ),
@@ -1386,14 +1471,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _posterRow(List<HomeVideoItem> items) {
     if (items.isEmpty) return _emptyRow("No videos");
     return SizedBox(
-      height: 150,
+      height: 168,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: _netPhysics,
-        padding: const EdgeInsets.symmetric(horizontal: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         cacheExtent: 600,
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, index) {
           final v = items[index];
           final bg = _thumbToBg(v.thumb);
@@ -1417,46 +1502,47 @@ class _HomeScreenState extends State<HomeScreen> {
     required String backgroundUrl,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: SizedBox(
-        width: 195,
+        width: 200,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Thumbnail
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: RepaintBoundary(
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      _netImage(backgroundUrl, fit: BoxFit.cover, memW: 400),
-                      Container(
-                        decoration: const BoxDecoration(
+                      _netImage(backgroundUrl, fit: BoxFit.cover, memW: 420),
+                      // Bottom gradient
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
-                            colors: [
-                              Color(0xCC000000),
-                              Color(0x00000000),
-                            ],
+                            colors: [Color(0xBB000000), Color(0x00000000)],
                           ),
                         ),
                       ),
+                      // Play button centered
                       Center(
                         child: Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.45),
+                            color: Colors.black.withOpacity(0.5),
                             shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white.withOpacity(0.4)),
                           ),
                           child: const Icon(
                             Icons.play_arrow_rounded,
                             color: Colors.white,
-                            size: 28,
+                            size: 22,
                           ),
                         ),
                       ),
@@ -1465,16 +1551,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 7),
             Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-                height: 1.1,
+                fontWeight: FontWeight.w600,
+                fontSize: 12.5,
+                height: 1.3,
               ),
             ),
           ],

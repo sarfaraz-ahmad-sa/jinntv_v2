@@ -145,7 +145,7 @@ class AppUpdateChecker {
       builder: (_) => WillPopScope(
         onWillPop: () async => !forceUpdate,
         child: AlertDialog(
-          backgroundColor: const Color(0xFF120E2A),
+          backgroundColor: const Color(0xFF1A242F),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -171,7 +171,7 @@ class AppUpdateChecker {
               ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xffEC4899),
+                backgroundColor: const Color(0xFF00A8E1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

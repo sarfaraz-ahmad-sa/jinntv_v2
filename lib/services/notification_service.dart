@@ -157,7 +157,7 @@ class NotificationService {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(12),
-          backgroundColor: const Color(0xFF111827),
+          backgroundColor: const Color(0xFF1A2533),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

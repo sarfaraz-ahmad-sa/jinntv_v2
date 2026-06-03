@@ -12,7 +12,20 @@
           "package_name": "com.application.JTCN"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "633817805853-gqpqsgt66g07eddqfjl14upn6rd39101.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.application.JTCN",
+            "certificate_hash": "3f846c263f3aca4ea1bf771cd090c398d702a78f"
+          }
+        },
+        {
+          "client_id": "633817805853-2peijfkbsh3t137fgnbfjcqskh9s0tij.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAg28gkNKJPWE_kYOAemA6ee22ClThKYcs"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633817805853-2peijfkbsh3t137fgnbfjcqskh9s0tij.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "633817805853-07jq7u5v62rr93kdtgm5p7n2gih1k50d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.application.JTCN"
+              }
+            }
+          ]
         }
       }
     }

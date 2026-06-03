@@ -237,15 +237,51 @@ class MyApp extends StatelessWidget {
         overscroll: false,
       ),
       theme: ThemeData(
-        brightness: Brightness.light,
+        brightness: Brightness.dark,
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFF0F171E),
+        colorScheme: const ColorScheme.dark(
+          primary:   Color(0xFF00A8E1),
+          secondary: Color(0xFF5BC8F5),
+          surface:   Color(0xFF1A242F),
+          onPrimary: Colors.white,
+          onSurface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0A1018),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+        ),
+        cardColor: const Color(0xFF1A242F),
+        dividerColor: Colors.white12,
+        snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Color(0xFF1A2533),
+          contentTextStyle: TextStyle(color: Colors.white),
+          behavior: SnackBarBehavior.floating,
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Color(0xFF00A8E1),
+          selectionColor: Color(0x4400A8E1),
+          selectionHandleColor: Color(0xFF00A8E1),
+        ),
+        progressIndicatorTheme: const ProgressIndicatorThemeData(
+          color: Color(0xFF00A8E1),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFF0F171E),
+        colorScheme: const ColorScheme.dark(
+          primary:   Color(0xFF00A8E1),
+          secondary: Color(0xFF5BC8F5),
+          surface:   Color(0xFF1A242F),
+        ),
       ),
-      themeMode: theme.themeMode,
-      home: isLoggedIn ? const AppShell() : const LoginScreen(),
+      themeMode: ThemeMode.dark,
+      home: const AppShell(), // TODO: restore login: isLoggedIn ? const AppShell() : const LoginScreen(),
     );
   }
 }

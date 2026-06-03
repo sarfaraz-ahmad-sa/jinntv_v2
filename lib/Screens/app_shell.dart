@@ -30,7 +30,10 @@ class _AppShellState extends State<AppShell> {
   StreamSubscription<String>? _tokenRefreshSub;
   bool _checkedForUpdate = false;
 
-  static const Color _bg = Color(0xFF0B0F14);
+  static const Color _bg = Color(0xFF0F171E);
+
+  // Only build a tab the first time it's visited
+  final Set<int> _loadedTabs = {0};
 
   late final List<Widget> _tabs = [
     const HomeScreen(),
@@ -39,9 +42,7 @@ class _AppShellState extends State<AppShell> {
     MyPlayListScreen(
       isRootTab: true,
       onBackToHome: () {
-        if (mounted) {
-          setState(() => _currentIndex = 0);
-        }
+        if (mounted) setState(() => _currentIndex = 0);
       },
     ),
   ];
@@ -125,7 +126,11 @@ class _AppShellState extends State<AppShell> {
     final idx = _currentIndex.clamp(0, 3);
     return IndexedStack(
       index: idx,
-      children: _tabs,
+      children: List.generate(_tabs.length, (i) {
+        // Don't build this tab until it's been visited at least once
+        if (!_loadedTabs.contains(i)) return const SizedBox.shrink();
+        return _tabs[i];
+      }),
     );
   }
 
@@ -142,7 +147,10 @@ class _AppShellState extends State<AppShell> {
             _openMoreSheet();
             return;
           }
-          setState(() => _currentIndex = i);
+          setState(() {
+            _currentIndex = i;
+            _loadedTabs.add(i); // Mark tab as visited → build it now
+          });
         },
       ),
     );

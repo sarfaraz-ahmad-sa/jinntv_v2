@@ -24,7 +24,7 @@ class MyPlayListScreen extends StatefulWidget {
 
 class _MyPlayListScreenState extends State<MyPlayListScreen>
     with SingleTickerProviderStateMixin {
-  static const _bg = Color(0xFF0F0F0F);
+  static const _bg = Color(0xFF0F171E);
   static const _surface = Color(0xFF1A1A1A);
   static const _card = Color(0xFF212121);
   static const _accent = Color(0xFFFF0000);

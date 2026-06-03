@@ -915,14 +915,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F0F0F),
+        backgroundColor: const Color(0xFF0F171E),
         appBar: _buildAppBar(),
         body: Stack(
           children: [
-            if (loading)
-              const Center(
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-              ),
+            if (loading) _buildSkeleton(),
             if (!loading && err != null) _buildError(err!),
             if (!loading && err == null) _buildBody(),
           ],
@@ -933,25 +930,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: const Color(0xFF0A1018),
       elevation: 0,
-      leadingWidth: 48,
+      leadingWidth: 44,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        padding: EdgeInsets.zero,
+        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+            color: Colors.white, size: 20),
         onPressed: _handleBack,
       ),
       titleSpacing: 0,
-      title: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset('assets/images/jinn-tv-logo.png', height: 38),
-          ),
-        ],
-      ),
+      title: Image.asset('assets/images/jinn-tv-logo.png', height: 32),
+      centerTitle: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: Colors.white),
+          icon: const Icon(Icons.search_rounded, color: Colors.white, size: 22),
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SearchScreen()),
@@ -1101,75 +1094,46 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   Widget _buildActionRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            _ReactionBtn(
-              icon: _liked ? Icons.thumb_up : Icons.thumb_up_outlined,
-              label: _fmt(_likes),
-              active: _liked,
-              accent: _accent,
-              loading: _savingReaction,
-              onTap: () => _saveAction("like"),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _NetflixActionBtn(
+            icon: _liked ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+            label: _likes > 0 ? _fmt(_likes) : "Like",
+            active: _liked,
+            onTap: _savingReaction ? null : () => _saveAction("like"),
+          ),
+          _NetflixActionBtn(
+            icon: _addedToList ? Icons.check_circle : Icons.add_circle_outline,
+            label: "My List",
+            active: _addedToList,
+            onTap: () => setState(() => _addedToList = !_addedToList),
+          ),
+          _NetflixActionBtn(
+            icon: Icons.share_outlined,
+            label: "Share",
+            onTap: _share,
+          ),
+          if (_current.hasLanguageOptions)
+            _NetflixActionBtn(
+              icon: Icons.subtitles_outlined,
+              label: "CC",
+              onTap: _openLanguageSheet,
             ),
-            const SizedBox(width: 2),
-            Container(
-              width: 1,
-              height: 24,
-              color: Colors.white12,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+          if (_subscribeEnabled)
+            _NetflixActionBtn(
+              icon: _isSubscribed
+                  ? Icons.notifications_active_outlined
+                  : Icons.subscriptions_outlined,
+              label: _isSubscribed ? "Subscribed" : "Subscribe",
+              active: _isSubscribed,
+              onTap: _savingSubscribe
+                  ? null
+                  : () => _saveAction(
+                        _isSubscribed ? "unsubscribe" : "subscribe"),
             ),
-            _ReactionBtn(
-              icon: _disliked ? Icons.thumb_down : Icons.thumb_down_outlined,
-              label: _fmt(_dislikes),
-              active: _disliked,
-              accent: _accent,
-              loading: _savingReaction,
-              onTap: () => _saveAction("dislike"),
-            ),
-            const SizedBox(width: 8),
-            _ActionChip(
-              icon: Icons.share_outlined,
-              label: "Share",
-              onTap: _share,
-            ),
-            const SizedBox(width: 8),
-            _ActionChip(
-              icon: _addedToList ? Icons.check : Icons.add,
-              label: "My List",
-              active: _addedToList,
-              onTap: () => setState(() => _addedToList = !_addedToList),
-            ),
-            if (_subscribeEnabled) ...[
-              const SizedBox(width: 8),
-              _SubscribeBtn(
-                isSubscribed: _isSubscribed,
-                label: _subscribeLabel,
-                count: _subscribeCount,
-                loading: _savingSubscribe,
-                accent: _accent,
-                onTap: () => _saveAction(_isSubscribed ? "unsubscribe" : "subscribe"),
-              ),
-            ],
-            const SizedBox(width: 8),
-            if (_current.hasLanguageOptions)
-              _ActionChip(
-                icon: Icons.closed_caption_outlined,
-                label: "CC",
-                onTap: _openLanguageSheet,
-              ),
-            const SizedBox(width: 8),
-            if (_comments > 0)
-              _ActionChip(
-                icon: Icons.comment_outlined,
-                label: _fmt(_comments),
-                onTap: null,
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -1231,34 +1195,36 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
             children: [
               Container(
                 width: 3,
-                height: 18,
+                height: 20,
                 decoration: BoxDecoration(
-                  color: _accent,
+                  gradient: LinearGradient(
+                    colors: [_accent, _accent.withOpacity(0.4)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               const Text(
                 "More Episodes",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],
           ),
         ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: min(6, list.length),
-          itemBuilder: (_, i) => _EpisodeTile(
-            ep: list[i],
+        ...list.take(6).map((ep) => RepaintBoundary(
+          child: _EpisodeTile(
+            ep: ep,
             accent: _accent,
-            onTap: () => _openItem(list[i]),
+            onTap: () => _openItem(ep),
           ),
-        ),
+        )),
         const SizedBox(height: 8),
       ],
     );
@@ -1278,33 +1244,31 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
             children: [
               Container(
                 width: 3,
-                height: 18,
+                height: 20,
                 decoration: BoxDecoration(
-                  color: Colors.white30,
+                  color: Colors.white38,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               const Text(
                 "Up Next",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],
           ),
         ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: min(10, list.length),
-          itemBuilder: (_, i) => _RelatedTile(
-            video: list[i],
-            onTap: () => _openItem(list[i]),
+        ...list.take(10).map((v) => RepaintBoundary(
+          child: _RelatedTile(
+            video: v,
+            onTap: () => _openItem(v),
           ),
-        ),
+        )),
       ],
     );
   }
@@ -1320,6 +1284,125 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     if (n >= 1000000) return "${(n / 1000000).toStringAsFixed(1)}M views";
     if (n >= 1000) return "${(n / 1000).toStringAsFixed(1)}K views";
     return "$n views";
+  }
+
+  // ── Skeleton shimmer loader ───────────────────────────────────────────────
+  Widget _buildSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Player area
+        _Shimmer(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.width * 9 / 16,
+          radius: 0,
+        ),
+        const SizedBox(height: 14),
+        // Title
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14),
+          child: _Shimmer(width: 240, height: 18, radius: 6),
+        ),
+        const SizedBox(height: 8),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14),
+          child: _Shimmer(width: 140, height: 13, radius: 4),
+        ),
+        const SizedBox(height: 18),
+        // Action chips
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: const [
+              _Shimmer(width: 80, height: 36, radius: 20),
+              SizedBox(width: 10),
+              _Shimmer(width: 80, height: 36, radius: 20),
+              SizedBox(width: 10),
+              _Shimmer(width: 80, height: 36, radius: 20),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14),
+          child: _Shimmer(width: double.infinity, height: 13, radius: 4),
+        ),
+        const SizedBox(height: 6),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14),
+          child: _Shimmer(width: 200, height: 13, radius: 4),
+        ),
+        const SizedBox(height: 24),
+        // Up Next header
+        const Padding(
+          padding: EdgeInsets.fromLTRB(14, 0, 14, 12),
+          child: _Shimmer(width: 100, height: 16, radius: 5),
+        ),
+        // Tile skeletons
+        ...List.generate(3, (_) => const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: Row(
+            children: [
+              _Shimmer(width: 140, height: 80, radius: 8),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _Shimmer(width: double.infinity, height: 13, radius: 4),
+                    SizedBox(height: 6),
+                    _Shimmer(width: 100, height: 11, radius: 4),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        )),
+      ],
+    );
+  }
+}
+
+// ── Netflix-style vertical icon+label action button ──────────────────────────
+
+class _NetflixActionBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool active;
+  final VoidCallback? onTap;
+
+  const _NetflixActionBtn({
+    required this.icon,
+    required this.label,
+    this.active = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = active ? Colors.white : const Color(0xFFAAAAAA);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(height: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1755,5 +1838,76 @@ extension on Widget {
       );
     }
     return this;
+  }
+}
+
+// ── Shimmer box for skeleton loading ─────────────────────────────────────────
+
+class _Shimmer extends StatefulWidget {
+  final double width;
+  final double height;
+  final double radius;
+
+  const _Shimmer({
+    this.width = double.infinity,
+    required this.height,
+    this.radius = 8,
+  });
+
+  @override
+  State<_Shimmer> createState() => _ShimmerState();
+}
+
+class _ShimmerState extends State<_Shimmer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+    _anim = Tween<double>(begin: -1.5, end: 2.5)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) {
+        final v = _anim.value;
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.radius),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              stops: [
+                (v - 0.4).clamp(0.0, 1.0),
+                v.clamp(0.0, 1.0),
+                (v + 0.4).clamp(0.0, 1.0),
+              ],
+              colors: const [
+                Color(0xFF1A1A1A),
+                Color(0xFF2A2A2A),
+                Color(0xFF1A1A1A),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

@@ -782,7 +782,7 @@ class _NetworkOrAssetImage extends StatelessWidget {
             return child;
           }
           return Container(
-            color: const Color(0xFF111827),
+            color: const Color(0xFF1A2533),
             alignment: Alignment.center,
             child: const SizedBox(
               width: 22,
@@ -795,7 +795,7 @@ class _NetworkOrAssetImage extends StatelessWidget {
           fallbackAsset,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
-            color: const Color(0xFF111827),
+            color: const Color(0xFF1A2533),
             alignment: Alignment.center,
             child: const Icon(
               Icons.ondemand_video_rounded,
@@ -811,7 +811,7 @@ class _NetworkOrAssetImage extends StatelessWidget {
       fallbackAsset,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => Container(
-        color: const Color(0xFF111827),
+        color: const Color(0xFF1A2533),
         alignment: Alignment.center,
         child: const Icon(
           Icons.ondemand_video_rounded,

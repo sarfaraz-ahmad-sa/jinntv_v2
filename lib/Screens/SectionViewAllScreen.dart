@@ -28,7 +28,7 @@ class SectionViewAllScreen extends StatefulWidget {
 
 class _SectionViewAllScreenState extends State<SectionViewAllScreen> {
   // ── palette (same as MyPlayListScreen) ───────
-  static const _bg      = Color(0xFF0F0F0F);
+  static const _bg      = Color(0xFF0F171E);
   static const _surface = Color(0xFF1A1A1A);
   static const _card    = Color(0xFF212121);
   static const _divider = Color(0xFF2A2A2A);

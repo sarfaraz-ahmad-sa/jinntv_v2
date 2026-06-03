@@ -482,7 +482,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             colors: [Color(0xffEF4444), Color(0xffDC2626)],
                           )
                         : const LinearGradient(
-                            colors: [Color(0xff7C3AED), Color(0xffEC4899)],
+                            colors: [Color(0xFF0077A8), Color(0xFF00A8E1)],
                           ),
                   ),
                   child: Icon(icon, color: Colors.white),
@@ -535,13 +535,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [Color(0xff7C3AED), Color(0xffEC4899)],
+                colors: [Color(0xFF0077A8), Color(0xFF00A8E1)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xffEC4899).withOpacity(.25),
+                  color: const Color(0xFF00A8E1).withOpacity(.25),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -583,7 +583,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xffEC4899),
+                color: const Color(0xFF00A8E1),
                 border: Border.all(color: Colors.white, width: 2),
               ),
               child: const Icon(
@@ -609,16 +609,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        backgroundColor: const Color(0xff070B1A),
+        backgroundColor: const Color(0xFF0F171E),
         body: Stack(
           children: [
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xff070B1A),
-                    Color(0xff120E2A),
-                    Color(0xff1D1033),
+                    Color(0xFF0F171E),
+                    Color(0xFF1A242F),
+                    Color(0xFF1F2D3A),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -634,7 +634,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   height: 220,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xff7C3AED).withOpacity(.18),
+                    color: const Color(0xFF0077A8).withOpacity(.18),
                   ),
                 ),
               ),
@@ -648,7 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   height: 180,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xffEC4899).withOpacity(.12),
+                    color: const Color(0xFF00A8E1).withOpacity(.12),
                   ),
                 ),
               ),
@@ -657,11 +657,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: _loading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xffEC4899),
+                        color: Color(0xFF00A8E1),
                       ),
                     )
                   : RefreshIndicator(
-                      color: const Color(0xffEC4899),
+                      color: const Color(0xFF00A8E1),
                       onRefresh: () => _loadProfile(),
                       child: ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -758,9 +758,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       borderRadius: BorderRadius.circular(999),
                                       gradient: LinearGradient(
                                         colors: [
-                                          const Color(0xff7C3AED)
+                                          const Color(0xFF0077A8)
                                               .withOpacity(.35),
-                                          const Color(0xffEC4899)
+                                          const Color(0xFF00A8E1)
                                               .withOpacity(.35),
                                         ],
                                       ),
@@ -826,7 +826,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             vertical: 16,
                                           ),
                                           backgroundColor:
-                                              const Color(0xffEC4899),
+                                              const Color(0xFF00A8E1),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(16),
