@@ -1,0 +1,14 @@
+Apply these files over the same relative paths in your existing jinntv_v2 project.
+Do NOT replace macos/Runner, Podfile.lock, Xcode project signing, Firebase plist, or entitlements.
+
+Then run:
+  cd ~/jinntv_v2
+  flutter pub get
+  flutter analyze
+  flutter test
+  flutter run -d macos --dart-define=TMDB_ACCESS_TOKEN=YOUR_NEW_TOKEN
+
+Deploy firestore.rules if you use Firebase CLI:
+  firebase deploy --only firestore:rules
+
+The app reads direct owned/licensed playback URLs from Firestore collection media_sources.

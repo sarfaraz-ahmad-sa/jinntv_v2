@@ -51,21 +51,21 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBMO9DyzEtBHnKeQP2mBdMQMIndFvrPb5M',
-    appId: '1:58916143462:android:94e508e3cbcababbf408a7',
-    messagingSenderId: '58916143462',
-    projectId: 'jinntv-4386a',
-    storageBucket: 'jinntv-4386a.firebasestorage.app',
+    apiKey: 'AIzaSyAg28gkNKJPWE_kYOAemA6ee22ClThKYcs',
+    appId: '1:633817805853:android:72a59d80e0dae7da27c2f4',
+    messagingSenderId: '633817805853',
+    projectId: 'nexplay-ef73c',
+    storageBucket: 'nexplay-ef73c.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBor_ULEuCoUwZkzSxPdU3OyPZqkpnIToU',
-    appId: '1:58916143462:ios:32dcc4996d2f9505f408a7',
-    messagingSenderId: '58916143462',
-    projectId: 'jinntv-4386a',
-    storageBucket: 'jinntv-4386a.firebasestorage.app',
-    iosClientId: '58916143462-muhb67q6mk3gqk00mg0mru72fu27esvg.apps.googleusercontent.com',
-    iosBundleId: 'com.cartzlinkv2.jinntv',
+    apiKey: 'AIzaSyBhQu7iTdephfeoEl5FfOC5y0S3A6ChQSQ',
+    appId: '1:633817805853:ios:154149e0ade4178427c2f4',
+    messagingSenderId: '633817805853',
+    projectId: 'nexplay-ef73c',
+    storageBucket: 'nexplay-ef73c.firebasestorage.app',
+    iosClientId: '633817805853-07jq7u5v62rr93kdtgm5p7n2gih1k50d.apps.googleusercontent.com',
+    iosBundleId: 'com.application.JTCN',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

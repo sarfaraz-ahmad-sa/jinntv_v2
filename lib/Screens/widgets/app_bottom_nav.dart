@@ -20,8 +20,8 @@ class AppBottomNav extends StatelessWidget {
   static const _items = [
     _NavItem(icon: Icons.home_outlined,       activeIcon: Icons.home_rounded,          label: 'Home'),
     _NavItem(icon: Icons.search_rounded,      activeIcon: Icons.search_rounded,        label: 'Search'),
-    _NavItem(icon: Icons.info_outline_rounded,activeIcon: Icons.info_rounded,          label: 'About'),
-    _NavItem(icon: Icons.playlist_play_rounded,activeIcon: Icons.playlist_play_rounded,label: 'My List'),
+    _NavItem(icon: Icons.explore_outlined,    activeIcon: Icons.explore_rounded,       label: 'Explore'),
+    _NavItem(icon: Icons.bookmarks_outlined, activeIcon: Icons.bookmarks_rounded,     label: 'My Space'),
     _NavItem(icon: Icons.menu_rounded,        activeIcon: Icons.menu_rounded,          label: 'More'),
   ];
 

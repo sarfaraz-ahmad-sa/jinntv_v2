@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Jinntv</string>
+	<string>CineNexa</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>jinntv</string>
+	<string>CineNexa</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,10 +29,12 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.58916143462-muhb67q6mk3gqk00mg0mru72fu27esvg</string>
+				<string>com.googleusercontent.apps.633817805853-07jq7u5v62rr93kdtgm5p7n2gih1k50d</string>
 			</array>
 		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>633817805853-07jq7u5v62rr93kdtgm5p7n2gih1k50d.apps.googleusercontent.com</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>

@@ -1,22 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-import '../services/notification_service.dart';
-import 'app_update_checker.dart';
-import '../db/db_helper.dart';
-
-import 'home.dart';
-import 'SearchScreen.dart';
-import 'AboutUs.dart';
-import 'MyPlayListScreen.dart';
+import '../core/services/user_library_service.dart';
+import '../features/home/presentation/cine_home_screen.dart';
+import '../features/library/presentation/watchlist_screen.dart';
+import '../features/more/presentation/cine_more_screen.dart';
+import '../features/explore/presentation/explore_screen.dart';
+import '../features/search/presentation/cine_search_screen.dart';
 import 'widgets/app_bottom_nav.dart';
-import 'widgets/More_menu.dart';
-import 'admin_api_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -28,40 +23,31 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
   StreamSubscription<String>? _tokenRefreshSub;
-  bool _checkedForUpdate = false;
-
-  static const Color _bg = Color(0xFF0F171E);
-
-  // Only build a tab the first time it's visited
   final Set<int> _loadedTabs = {0};
 
-  late final List<Widget> _tabs = [
-    const HomeScreen(),
-    const SearchScreen(),
-    const AboutUsScreen(),
-    MyPlayListScreen(
-      isRootTab: true,
-      onBackToHome: () {
-        if (mounted) setState(() => _currentIndex = 0);
-      },
-    ),
+  late final List<Widget> _tabs = const [
+    CineHomeScreen(),
+    CineSearchScreen(),
+    ExploreScreen(),
+    WatchlistScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
+    UserLibraryService.instance.saveProfileIfNeeded();
+    _syncFcm();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_checkedForUpdate) {
-        _checkedForUpdate = true;
-        AppUpdateChecker.check(context);
-      }
-    });
-
-    _ensureFirebaseTokenForLoggedInUser();
-
-    NotificationService.instance.init(context);
-    NotificationService.instance.handleInitialMessage(context);
+  Future<void> _syncFcm() async {
+    if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) return;
+    Future<void> save(String token) => UserLibraryService.instance.saveFcmToken(
+          token,
+          platform: Platform.isIOS ? 'ios' : 'android',
+        );
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) await save(token);
+    _tokenRefreshSub = FirebaseMessaging.instance.onTokenRefresh.listen(save);
   }
 
   @override
@@ -70,119 +56,47 @@ class _AppShellState extends State<AppShell> {
     super.dispose();
   }
 
-  Future<void> _ensureFirebaseTokenForLoggedInUser() async {
-    if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) return;
-
-    final userId = await DBHelper.getUserIdInt();
-    if (userId == null || userId <= 0) return;
-
-    await _saveFirebaseToken(userId);
-
-    await _tokenRefreshSub?.cancel();
-    _tokenRefreshSub =
-        FirebaseMessaging.instance.onTokenRefresh.listen((_) async {
-      final uid = await DBHelper.getUserIdInt();
-      if (uid != null && uid > 0) {
-        await _saveFirebaseToken(uid);
-      }
-    });
-  }
-
-  Future<void> _saveFirebaseToken(int userId) async {
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token == null || token.isEmpty) return;
-
-    final res = await http.post(
-      Uri.parse(apiUrl('/api_forApp/saveFirebaseToken.php')),
-      body: {
-        "user_id": userId.toString(),
-        "fcm_token": token,
-        "device": Platform.isIOS ? "ios" : "android",
-      },
-    );
-
-    debugPrint("saveFirebaseToken => ${res.statusCode} ${res.body}");
-  }
+  Widget _body() => IndexedStack(
+        index: _currentIndex.clamp(0, 3),
+        children: List.generate(
+          _tabs.length,
+          (i) => _loadedTabs.contains(i) ? _tabs[i] : const SizedBox.shrink(),
+        ),
+      );
 
   void _openMoreSheet() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      barrierColor: Colors.black.withOpacity(0.60),
-      builder: (_) {
-        return _MoreSheetWrapper(
-          child: const MoreScreen(),
-          bg: _bg,
-        );
-      },
-    ).then((_) {
-      if (!mounted) return;
-      setState(() => _currentIndex = 0);
-    });
-  }
-
-  Widget _body() {
-    final idx = _currentIndex.clamp(0, 3);
-    return IndexedStack(
-      index: idx,
-      children: List.generate(_tabs.length, (i) {
-        // Don't build this tab until it's been visited at least once
-        if (!_loadedTabs.contains(i)) return const SizedBox.shrink();
-        return _tabs[i];
-      }),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bg,
-      body: _body(),
-      bottomNavigationBar: AppBottomNav(
-        backgroundColor: _bg,
-        currentIndex: _currentIndex,
-        onTap: (i) {
-          if (i == 4) {
-            _openMoreSheet();
-            return;
-          }
-          setState(() {
-            _currentIndex = i;
-            _loadedTabs.add(i); // Mark tab as visited → build it now
-          });
-        },
-      ),
-    );
-  }
-}
-
-class _MoreSheetWrapper extends StatelessWidget {
-  final Widget child;
-  final Color bg;
-
-  const _MoreSheetWrapper({
-    required this.child,
-    required this.bg,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final h = MediaQuery.of(context).size.height;
-    final top = h * 0.12;
-
-    return Padding(
-      padding: EdgeInsets.only(top: top),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-        child: Container(
-          color: bg,
-          child: SafeArea(
-            top: false,
-            child: child,
-          ),
+      barrierColor: Colors.black.withValues(alpha: .65),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * .10),
+        child: const ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          child: CineMoreScreen(),
         ),
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: const Color(0xFF08090C),
+        body: _body(),
+        bottomNavigationBar: AppBottomNav(
+          currentIndex: _currentIndex,
+          backgroundColor: const Color(0xFF08090C),
+          onTap: (i) {
+            if (i == 4) {
+              _openMoreSheet();
+              return;
+            }
+            setState(() {
+              _currentIndex = i;
+              _loadedTabs.add(i);
+            });
+          },
+        ),
+      );
 }

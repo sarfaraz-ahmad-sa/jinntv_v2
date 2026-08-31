@@ -1,295 +1,140 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
-import 'package:provider/provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'core/config/app_config.dart';
+import 'core/theme/cine_theme.dart';
+import 'features/auth/presentation/login_screen.dart';
+import 'Screens/app_shell.dart';
+import 'Screens/onboarding_screen.dart';
 import 'firebase_options.dart';
 
-import 'Screens/Login.dart';
-import 'Screens/app_shell.dart';
-import 'Screens/admin_api_screen.dart';
-import 'Screens/onboarding_screen.dart';
-
-import 'controllers/theme_controller.dart';
-import 'db/db_helper.dart';
-
-// ✅ Global navigator key for notification routing
 final GlobalKey<NavigatorState> navKey = GlobalKey<NavigatorState>();
-
-// ✅ Local notifications (for foreground)
 final FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  // background tasks if needed
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (kDebugMode) {
+    debugPrint('CineNexa Firebase project: ${Firebase.app().options.projectId}');
+  }
 }
 
 Future<void> _initLocalNotifications() async {
-  // ✅ Android init
-  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  // ✅ iOS init (REQUIRED when targeting iOS)
-  const iosInit = DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-  );
-
   const initSettings = InitializationSettings(
-    android: androidInit,
-    iOS: iosInit,
+    android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    iOS: DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    ),
   );
 
   await _local.initialize(
     initSettings,
-    onDidReceiveNotificationResponse: (resp) {
-      final payload = resp.payload;
-      if (payload != null && payload.isNotEmpty) {
-        final data = jsonDecode(payload) as Map<String, dynamic>;
-        _handleRedirect(data);
-      }
+    onDidReceiveNotificationResponse: (response) {
+      final payload = response.payload;
+      if (payload == null || payload.isEmpty) return;
+      try {
+        _handleRedirect((jsonDecode(payload) as Map).cast<String, dynamic>());
+      } catch (_) {}
     },
   );
 
-  // ✅ Android channel (only Android)
   if (!kIsWeb && Platform.isAndroid) {
     const channel = AndroidNotificationChannel(
-      'jinntv_high',
-      'JinnTV Notifications',
-      description: 'JinnTV push notifications',
+      'cinenexa_high',
+      'CineNexa Notifications',
+      description: 'CineNexa updates and recommendations',
       importance: Importance.high,
     );
-
     await _local
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
-  }
-
-  // ✅ iOS permissions (recommended)
-  if (!kIsWeb && Platform.isIOS) {
-    await _local
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 }
 
 Future<void> _initFCM() async {
-  // ✅ Only mobile (Android/iOS). Skip web/desktop.
-  if (kIsWeb) return;
-  if (!(Platform.isAndroid || Platform.isIOS)) return;
+  if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) return;
 
-  // ✅ Permission
-  await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  // ✅ Background handler
+  await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
 
-  // ✅ Foreground -> show local notification
-  FirebaseMessaging.onMessage.listen((RemoteMessage msg) async {
-    final title = msg.notification?.title ?? 'JINNTV';
-    final body = msg.notification?.body ?? '';
-
+  FirebaseMessaging.onMessage.listen((msg) async {
     await _local.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
+      msg.notification?.title ?? AppConfig.appName,
+      msg.notification?.body ?? '',
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'jinntv_high',
-          'JinnTV Notifications',
-          channelDescription: 'JinnTV push notifications',
+          'cinenexa_high',
+          'CineNexa Notifications',
+          channelDescription: 'CineNexa updates and recommendations',
           importance: Importance.high,
           priority: Priority.high,
         ),
-        iOS: DarwinNotificationDetails(), // ✅ iOS details added
+        iOS: DarwinNotificationDetails(),
       ),
-      payload: jsonEncode(msg.data), // ✅ carries {redirect: "..."}
+      payload: jsonEncode(msg.data),
     );
   });
 
-  // ✅ Tap when app in background
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage msg) {
-    _handleRedirect(msg.data);
-  });
-
-  // ✅ Tap when app terminated
+  FirebaseMessaging.onMessageOpenedApp.listen((msg) => _handleRedirect(msg.data));
   final initial = await FirebaseMessaging.instance.getInitialMessage();
-  if (initial != null) {
-    _handleRedirect(initial.data);
-  }
-
-  // ✅ Safe token handling (no crash on iOS)
-  FirebaseMessaging.instance.onTokenRefresh.listen((t) {
-    debugPrint("FCM TOKEN (refresh): $t");
-  });
-
-  Future<void> _tryGetTokenSafely() async {
-    try {
-      if (Platform.isIOS) {
-        // wait a little for APNS token to arrive
-        for (int i = 0; i < 30; i++) {
-          final apns = await FirebaseMessaging.instance.getAPNSToken();
-          if (apns != null && apns.isNotEmpty) {
-            debugPrint("APNS TOKEN: $apns");
-            break;
-          }
-          await Future.delayed(const Duration(milliseconds: 300));
-        }
-      }
-
-      final token = await FirebaseMessaging.instance.getToken();
-      debugPrint("FCM TOKEN: $token");
-    } catch (e) {
-      debugPrint("FCM token not ready yet (safe): $e");
-    }
-  }
-
-  // ignore: unawaited_futures
-  _tryGetTokenSafely();
+  if (initial != null) _handleRedirect(initial.data);
 }
 
-/// ✅ Keep it simple now: just route by `redirect`
 void _handleRedirect(Map<String, dynamic> data) {
-  final redirect = (data['redirect'] ?? '').toString().trim();
-  if (redirect.isEmpty) return;
-
-  navKey.currentState?.push(
+  if (FirebaseAuth.instance.currentUser == null) return;
+  navKey.currentState?.pushAndRemoveUntil(
     MaterialPageRoute(builder: (_) => const AppShell()),
+    (_) => false,
   );
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Improves perceived performance (fewer image re-downloads / decodes).
-  // Keep conservative for low-end devices.
   PaintingBinding.instance.imageCache.maximumSize = 1500;
-  PaintingBinding.instance.imageCache.maximumSizeBytes = 80 << 20; // 80 MB
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 80 << 20;
 
-  // ✅ Load admin base URL before anything else
-  await initAdminBaseUrl();
-
-  // ✅ Firebase init (try-catch guards against duplicate-app on hot restart)
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (_) {
-    // Already initialized — safe to ignore
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (kDebugMode) {
+    debugPrint('[CineNexa Firebase] project=${Firebase.app().options.projectId} appId=${Firebase.app().options.appId}');
   }
 
-  // ✅ local notifications + FCM init (mobile only)
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     await _initLocalNotifications();
     await _initFCM();
   }
 
-  // ✅ Desktop SQLite (macOS / Windows / Linux)
-  if (!kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
-  bool loggedIn      = false;
-  bool seenOnboarding = false;
-
-  // ✅ Session + onboarding check (not for web)
-  if (!kIsWeb) {
-    loggedIn       = await DBHelper.isLoggedIn();
-    seenOnboarding = await hasSeenOnboarding();
-  }
-
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeController(),
-      child: MyApp(isLoggedIn: loggedIn, seenOnboarding: seenOnboarding),
-    ),
-  );
+  final seenOnboarding = kIsWeb ? true : await hasSeenOnboarding();
+  runApp(CineNexaApp(seenOnboarding: seenOnboarding));
 }
 
-class MyApp extends StatelessWidget {
-  final bool isLoggedIn;
+class CineNexaApp extends StatelessWidget {
   final bool seenOnboarding;
-  const MyApp({super.key, required this.isLoggedIn, this.seenOnboarding = false});
+  const CineNexaApp({super.key, required this.seenOnboarding});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.watch<ThemeController>();
+  Widget build(BuildContext context) => MaterialApp(
+        navigatorKey: navKey,
+        debugShowCheckedModeBanner: false,
+        title: AppConfig.appName,
+        themeMode: ThemeMode.dark,
+        theme: _theme(),
+        darkTheme: _theme(),
+        home: !seenOnboarding
+            ? const OnboardingScreen()
+            : FirebaseAuth.instance.currentUser != null
+                ? const AppShell()
+                : const CineLoginScreen(),
+      );
 
-    return MaterialApp(
-      navigatorKey: navKey,
-      debugShowCheckedModeBanner: false,
-      title: 'Jinn TV',
-      scrollBehavior: const MaterialScrollBehavior().copyWith(
-        overscroll: false,
-      ),
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF0F171E),
-        colorScheme: const ColorScheme.dark(
-          primary:   Color(0xFF00A8E1),
-          secondary: Color(0xFF5BC8F5),
-          surface:   Color(0xFF1A242F),
-          onPrimary: Colors.white,
-          onSurface: Colors.white,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0A1018),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-        ),
-        cardColor: const Color(0xFF1A242F),
-        dividerColor: Colors.white12,
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: Color(0xFF1A2533),
-          contentTextStyle: TextStyle(color: Colors.white),
-          behavior: SnackBarBehavior.floating,
-        ),
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: Color(0xFF00A8E1),
-          selectionColor: Color(0x4400A8E1),
-          selectionHandleColor: Color(0xFF00A8E1),
-        ),
-        progressIndicatorTheme: const ProgressIndicatorThemeData(
-          color: Color(0xFF00A8E1),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF0F171E),
-        colorScheme: const ColorScheme.dark(
-          primary:   Color(0xFF00A8E1),
-          secondary: Color(0xFF5BC8F5),
-          surface:   Color(0xFF1A242F),
-        ),
-      ),
-      themeMode: ThemeMode.dark,
-      home: !seenOnboarding
-          ? const OnboardingScreen()
-          : isLoggedIn
-              ? const AppShell()
-              : const LoginScreen(),
-    );
-  }
+  ThemeData _theme() => CineTheme.dark();
 }

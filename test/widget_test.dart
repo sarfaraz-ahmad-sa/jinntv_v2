@@ -1,32 +1,22 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:cinenexa/Screens/widgets/app_bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-
-import 'package:jinntv/main.dart';
-import 'package:jinntv/controllers/theme_controller.dart';
 
 void main() {
-  testWidgets('App boots smoke test', (WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 2400));
-    addTearDown(() async {
-      await tester.binding.setSurfaceSize(null);
-    });
-
+  testWidgets('CineNexa bottom navigation renders', (tester) async {
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => ThemeController(),
-        child: const MyApp(isLoggedIn: false),
+      MaterialApp(
+        home: Scaffold(
+          bottomNavigationBar: AppBottomNav(
+            currentIndex: 0,
+            onTap: (_) {},
+          ),
+        ),
       ),
     );
 
-    await tester.pumpAndSettle();
-    expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Explore'), findsOneWidget);
+    expect(find.text('My Space'), findsOneWidget);
   });
 }

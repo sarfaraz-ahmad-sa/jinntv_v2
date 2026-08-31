@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../db/db_helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'app_shell.dart';
-import 'Login.dart';
+import '../features/auth/presentation/login_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Onboarding seen flag
@@ -43,35 +43,35 @@ class _Slide {
 const _kSlides = [
   _Slide(
     icon: Icons.play_circle_filled_rounded,
-    iconColor: Color(0xFF00A8E1),
-    bgGlow: Color(0xFF0077A8),
-    title: 'Welcome to JinnTV',
+    iconColor: Color(0xFFE50914),
+    bgGlow: Color(0xFF8F0610),
+    title: 'Welcome to CineNexa',
     subtitle:
-        'Your premium Islamic & family entertainment platform. Thousands of videos at your fingertips.',
+        'Discover movies, trailers, cast, recommendations and where to watch — all in one modern experience.',
   ),
   _Slide(
     icon: Icons.video_collection_rounded,
-    iconColor: Color(0xFF5BC8F5),
-    bgGlow: Color(0xFF005F80),
-    title: 'Explore & Discover',
+    iconColor: Color(0xFFFF5A64),
+    bgGlow: Color(0xFF6D0610),
+    title: 'Explore the Global Catalog',
     subtitle:
-        'Browse categories, trending content and curated sections — all in one place.',
+        'Browse trending, popular, in-theatre, top-rated and upcoming movies from one clean catalog.',
   ),
   _Slide(
     icon: Icons.playlist_add_check_rounded,
-    iconColor: Color(0xFF00D4AA),
-    bgGlow: Color(0xFF006B56),
-    title: 'Build Your My List',
+    iconColor: Color(0xFFFFB000),
+    bgGlow: Color(0xFF7A5200),
+    title: 'Build Your Watchlist',
     subtitle:
-        'Save your favourite videos and continue watching from where you left off.',
+        'Save movies to My List. CineNexa keeps a local copy and can sync it with your Firebase account.',
   ),
   _Slide(
     icon: Icons.notifications_active_rounded,
-    iconColor: Color(0xFF00A8E1),
-    bgGlow: Color(0xFF004466),
-    title: 'Stay Up to Date',
+    iconColor: Color(0xFFE50914),
+    bgGlow: Color(0xFF58060C),
+    title: 'Find Where to Watch',
     subtitle:
-        'Get notified about new episodes, live events and exclusive content — never miss a moment.',
+        'See trailers, cast, recommendations and country-based legal streaming availability when provided.',
   ),
 ];
 
@@ -135,16 +135,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     await markOnboardingSeen();
     if (!mounted) return;
 
-    final loggedIn = await DBHelper.isLoggedIn();
+    final loggedIn = FirebaseAuth.instance.currentUser != null;
     if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) =>
-            loggedIn ? const AppShell() : const LoginScreen(),
+        pageBuilder: (_, _, _) =>
+            loggedIn ? const AppShell() : const CineLoginScreen(),
         transitionDuration: const Duration(milliseconds: 400),
-        transitionsBuilder: (_, anim, __, child) =>
+        transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
     );
@@ -182,7 +182,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               height: 260,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _kSlides[_current].bgGlow.withOpacity(.18),
+                color: _kSlides[_current].bgGlow.withValues(alpha: .18),
               ),
             ),
           ),
@@ -197,7 +197,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _kSlides[_current].bgGlow.withOpacity(.10),
+                color: _kSlides[_current].bgGlow.withValues(alpha: .10),
               ),
             ),
           ),
@@ -219,7 +219,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       child: Text(
                         'Skip',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(.45),
+                          color: Colors.white.withValues(alpha: .45),
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -258,9 +258,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           decoration: BoxDecoration(
                             gradient: selected
                                 ? const LinearGradient(
-                                    colors: [Color(0xFF0077A8), Color(0xFF00A8E1)])
+                                    colors: [Color(0xFF8F0610), Color(0xFFE50914)])
                                 : null,
-                            color: selected ? null : Colors.white.withOpacity(.2),
+                            color: selected ? null : Colors.white.withValues(alpha: .2),
                             borderRadius: BorderRadius.circular(999),
                           ),
                         );
@@ -277,12 +277,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF0077A8), Color(0xFF00A8E1)],
+                            colors: [Color(0xFF8F0610), Color(0xFFE50914)],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF00A8E1).withOpacity(.35),
+                              color: const Color(0xFFE50914).withValues(alpha: .35),
                               blurRadius: 18,
                               offset: const Offset(0, 6),
                             ),
@@ -325,14 +325,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         child: RichText(
                           text: TextSpan(
                             style: TextStyle(
-                                color: Colors.white.withOpacity(.4),
+                                color: Colors.white.withValues(alpha: .4),
                                 fontSize: 13),
                             children: const [
                               TextSpan(text: 'Already have an account? '),
                               TextSpan(
                                 text: 'Sign in',
                                 style: TextStyle(
-                                  color: Color(0xFF00A8E1),
+                                  color: Color(0xFFE50914),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -374,7 +374,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: slide.iconColor.withOpacity(.15), width: 1.5),
+                          color: slide.iconColor.withValues(alpha: .15), width: 1.5),
                     ),
                   ),
                   // Middle ring
@@ -384,7 +384,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: slide.iconColor.withOpacity(.25), width: 1),
+                          color: slide.iconColor.withValues(alpha: .25), width: 1),
                     ),
                   ),
                   // Main circle
@@ -395,12 +395,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          slide.bgGlow.withOpacity(.4),
-                          slide.bgGlow.withOpacity(.1),
+                          slide.bgGlow.withValues(alpha: .4),
+                          slide.bgGlow.withValues(alpha: .1),
                         ],
                       ),
                       border: Border.all(
-                          color: slide.iconColor.withOpacity(.3), width: 1),
+                          color: slide.iconColor.withValues(alpha: .3), width: 1),
                     ),
                     child: Icon(slide.icon, color: slide.iconColor, size: 52),
                   ),
@@ -415,7 +415,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           height: 6,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: slide.iconColor.withOpacity(.4),
+                            color: slide.iconColor.withValues(alpha: .4),
                           ),
                         ),
                       ),
@@ -447,7 +447,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             slide.subtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withOpacity(.55),
+              color: Colors.white.withValues(alpha: .55),
               fontSize: 15,
               height: 1.6,
             ),

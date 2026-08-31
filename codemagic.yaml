@@ -8,7 +8,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.cartzlinkv2.jinntv
+        bundle_identifier: com.application.JTCN
       flutter: 3.41.8
       xcode: 26
       cocoapods: default

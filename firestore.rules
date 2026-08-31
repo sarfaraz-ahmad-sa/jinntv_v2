@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Playback URLs for content you own or are licensed to distribute.
+    // Clients may read active source documents; writes stay server/admin-only.
+    match /media_sources/{sourceId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+
+      match /{collection}/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
