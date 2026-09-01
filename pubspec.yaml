@@ -1,7 +1,7 @@
 name: cinenexa
 description: "CineNexa - a modern movie discovery and watchlist app."
 publish_to: 'none'
-version: 2.2.1+26
+version: 2.2.3+25
 
 environment:
   sdk: ^3.10.4

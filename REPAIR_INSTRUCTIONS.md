@@ -1,36 +1,37 @@
-# CineNexa v2.2.1 Lib Repair
+# CineNexa v2.2.3 Full Lib Repair
 
-This repair patch restores the modern CineNexa `lib/` tree after the legacy JinnTV `main.dart` was accidentally restored.
+This is a complete source repair bundle for the CineNexa Dart layer.
+It intentionally does NOT include macOS/Xcode folders, so your working signing/team setup remains untouched.
 
-It includes:
-- modern CineNexa `main.dart`
-- Firebase options and current auth flow
-- Google sign-in runtime diagnostics/timeouts
-- premium Movies/TV/Search/My Space code
-- CineNexa in-app player
-- `video_player` dependency
-- current tests and Firestore rules
-
-It intentionally DOES NOT include `macos/`, `ios/`, or `android/` platform folders, so your working Xcode Team/signing configuration is preserved.
-
-## Apply
-From `~/jinntv_v2`:
+From project root (`~/jinntv_v2`):
 
 ```bash
-rm -rf lib
-cp -R /path/to/CineNexa_v2.2.1_LibRepair_Patch/lib ./lib
-cp /path/to/CineNexa_v2.2.1_LibRepair_Patch/pubspec.yaml ./pubspec.yaml
+mv lib lib_broken_backup_$(date +%Y%m%d_%H%M%S)
 rm -rf test
-cp -R /path/to/CineNexa_v2.2.1_LibRepair_Patch/test ./test
-cp /path/to/CineNexa_v2.2.1_LibRepair_Patch/firestore.rules ./firestore.rules
+cp -R /path/to/CineNexa_v2.2.3_FullLibRepair/lib ./lib
+cp -R /path/to/CineNexa_v2.2.3_FullLibRepair/test ./test
+cp /path/to/CineNexa_v2.2.3_FullLibRepair/pubspec.yaml ./pubspec.yaml
+cp /path/to/CineNexa_v2.2.3_FullLibRepair/firestore.rules ./firestore.rules
+
 flutter clean
 flutter pub get
 flutter analyze
 flutter test
 ```
 
-Then run with your NEW TMDB token:
+Then run with a fresh TMDB Read Access Token:
 
 ```bash
 flutter run -d macos --dart-define=TMDB_ACCESS_TOKEN=YOUR_NEW_TMDB_TOKEN
 ```
+
+Included:
+- complete CineNexa lib tree
+- premium UI / movies / TV / search / My Space
+- Firebase auth runtime fixes
+- own in-app MP4/HLS player
+- Firestore media_sources lookup
+- TMDB retry/resilience handling
+- tests and Firestore rules
+
+Do not overwrite `macos/`, because its signing configuration is already set on your machine.
