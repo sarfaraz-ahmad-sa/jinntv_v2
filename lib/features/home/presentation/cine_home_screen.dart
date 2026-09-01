@@ -43,6 +43,7 @@ class _CineHomeScreenState extends State<CineHomeScreen>
   List<TvShow> _popularTv = [];
   List<TvShow> _forYouTv = [];
   List<MediaHistoryItem> _history = [];
+  String? _lastCatalogError;
 
   @override
   bool get wantKeepAlive => true;
@@ -96,10 +97,30 @@ class _CineHomeScreenState extends State<CineHomeScreen>
     } catch (_) {}
   }
 
+
+  Future<MoviePage> _movieOrEmpty(Future<MoviePage> Function() load) async {
+    try {
+      return await load();
+    } catch (e) {
+      _lastCatalogError ??= e.toString();
+      return const MoviePage(page: 1, totalPages: 0, totalResults: 0, items: <Movie>[]);
+    }
+  }
+
+  Future<TvPage> _tvOrEmpty(Future<TvPage> Function() load) async {
+    try {
+      return await load();
+    } catch (e) {
+      _lastCatalogError ??= e.toString();
+      return const TvPage(page: 1, totalPages: 0, totalResults: 0, items: <TvShow>[]);
+    }
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
+      _lastCatalogError = null;
     });
     try {
       final prefs = await Future.wait<dynamic>([
@@ -112,14 +133,16 @@ class _CineHomeScreenState extends State<CineHomeScreen>
       final history = prefs[2] as List<MediaHistoryItem>;
 
       final results = await Future.wait<dynamic>([
-        _movieRepo.fetchMovies(list: 'trending'),
-        _movieRepo.fetchMovies(list: 'popular'),
-        _movieRepo.fetchMovies(list: 'now-playing'),
-        _movieRepo.fetchMovies(list: 'top-rated'),
-        _tvRepo.fetchShows(list: 'trending'),
-        _tvRepo.fetchShows(list: 'popular'),
-        if (movieGenres.isNotEmpty) _movieRepo.discoverByGenres(movieGenres),
-        if (tvGenres.isNotEmpty) _tvRepo.discoverByGenres(tvGenres),
+        _movieOrEmpty(() => _movieRepo.fetchMovies(list: 'trending')),
+        _movieOrEmpty(() => _movieRepo.fetchMovies(list: 'popular')),
+        _movieOrEmpty(() => _movieRepo.fetchMovies(list: 'now-playing')),
+        _movieOrEmpty(() => _movieRepo.fetchMovies(list: 'top-rated')),
+        _tvOrEmpty(() => _tvRepo.fetchShows(list: 'trending')),
+        _tvOrEmpty(() => _tvRepo.fetchShows(list: 'popular')),
+        if (movieGenres.isNotEmpty)
+          _movieOrEmpty(() => _movieRepo.discoverByGenres(movieGenres)),
+        if (tvGenres.isNotEmpty)
+          _tvOrEmpty(() => _tvRepo.discoverByGenres(tvGenres)),
       ]);
 
       if (!mounted) return;
@@ -132,6 +155,24 @@ class _CineHomeScreenState extends State<CineHomeScreen>
       final popularTv = (results[index++] as TvPage).items;
       final forYouMovies = movieGenres.isNotEmpty ? (results[index++] as MoviePage).items : <Movie>[];
       final forYouTv = tvGenres.isNotEmpty ? (results[index++] as TvPage).items : <TvShow>[];
+
+      final hasAnyCatalog = trendingMovies.isNotEmpty ||
+          popularMovies.isNotEmpty ||
+          nowPlaying.isNotEmpty ||
+          topRated.isNotEmpty ||
+          trendingTv.isNotEmpty ||
+          popularTv.isNotEmpty ||
+          forYouMovies.isNotEmpty ||
+          forYouTv.isNotEmpty;
+
+      if (!hasAnyCatalog && _lastCatalogError != null) {
+        setState(() {
+          _loading = false;
+          _error = _lastCatalogError;
+          _history = history;
+        });
+        return;
+      }
 
       setState(() {
         _trendingMovies = trendingMovies;
